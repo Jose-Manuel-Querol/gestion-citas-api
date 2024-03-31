@@ -6,6 +6,15 @@ import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { DBOptions } from '../db.datasourceoptions';
 import { APP_PIPE } from '@nestjs/core';
 import { SendgridService } from './shared/sendgrid.service';
+import { AccountModule } from './account/account.module';
+import { AgentModule } from './agent/agent.module';
+import { AppointmentTypeModule } from './appointment-type/appointment-type.module';
+import { AppointmentTypeAgentModule } from './appointment-type-agent/appointment-type-agent.module';
+import { DayModule } from './day/day.module';
+import { LocationModule } from './location/location.module';
+import { ZoneModule } from './zone/zone.module';
+import { AppointmentModule } from './appointment/appointment.module';
+import { AddressModule } from './address/address.module';
 
 @Module({
   imports: [
@@ -24,6 +33,15 @@ import { SendgridService } from './shared/sendgrid.service';
         return dbOptions;
       },
     }),
+    AccountModule,
+    AgentModule,
+    AppointmentTypeModule,
+    AppointmentTypeAgentModule,
+    DayModule,
+    LocationModule,
+    ZoneModule,
+    AppointmentModule,
+    AddressModule,
   ],
   controllers: [AppController],
   providers: [
