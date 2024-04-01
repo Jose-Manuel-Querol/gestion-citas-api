@@ -41,12 +41,14 @@ export class AccountController {
   }
 
   @Serialize(AccountDto)
+  @UseGuards(JwtAccountGuard)
   @Get('by-email')
   async getAllByEmail(@Query('email') email: string): Promise<Account[]> {
     return await this.accountService.getByEmail(email);
   }
 
   @Serialize(AccountDto)
+  @UseGuards(JwtAccountGuard)
   @Get('/:id')
   async getOneAccount(@Param('id') accountId: string): Promise<Account> {
     const account = await this.accountService.getById(parseInt(accountId));
