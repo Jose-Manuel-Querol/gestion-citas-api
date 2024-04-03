@@ -24,6 +24,18 @@ export class ZoneService {
     return zone;
   }
 
+  async getByZoneName(zoneName: string): Promise<Zone> {
+    const zone = await this.repo.findOne({
+      where: { zoneName },
+    });
+
+    if (!zone) {
+      throw new NotFoundException('La zona no fue encontrada');
+    }
+
+    return zone;
+  }
+
   async create(createDto: CreateZoneDto): Promise<Zone> {
     const zone = this.repo.create({
       zoneName: createDto.zoneName,
