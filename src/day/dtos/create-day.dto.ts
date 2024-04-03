@@ -1,4 +1,4 @@
-import { IsBoolean, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsString } from 'class-validator';
 export class CreateDayDto {
   @IsNotEmpty()
   @IsString()
@@ -15,8 +15,4 @@ export class CreateDayDto {
   @IsNotEmpty()
   @IsBoolean()
   active: boolean;
-
-  @IsNotEmpty()
-  @IsNumber()
-  appointmentTypeAgentId: number;
 }
