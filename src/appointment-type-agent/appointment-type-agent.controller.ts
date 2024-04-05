@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   Post,
+  Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -12,6 +13,7 @@ import { AppointmentTypeAgentService } from './appointment-type-agent.service';
 import { AppointmentTypeAgent } from './appointment-type-agent.entity';
 import { CreateManyAppointmentTypeAgent } from './dtos/create-many-appointment-type-agent.dto';
 import { JwtAccountGuard } from '../account/account-auth/account-guards/account.jwt.guard';
+import { UpdateManyAppointmentTypeAgent } from './dtos/update-many-appointment-type-agent.dto';
 
 @Controller('appointment-type-agent')
 export class AppointmentTypeAgentController {
@@ -61,6 +63,14 @@ export class AppointmentTypeAgentController {
     @Body() body: CreateManyAppointmentTypeAgent,
   ): Promise<AppointmentTypeAgent[]> {
     return await this.appointmentTypeAgentService.createMany(body);
+  }
+
+  @UseGuards(JwtAccountGuard)
+  @Put()
+  async updateAppointmentTypeAgent(
+    @Body() body: UpdateManyAppointmentTypeAgent,
+  ): Promise<AppointmentTypeAgent[]> {
+    return await this.appointmentTypeAgentService.updateMany(body);
   }
 
   @UseGuards(JwtAccountGuard)

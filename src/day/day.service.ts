@@ -9,6 +9,14 @@ import { AppointmentTypeAgent } from '../appointment-type-agent/appointment-type
 export class DayService {
   constructor(@InjectRepository(Day) private repo: Repository<Day>) {}
 
+  async getAllByAppointmentTypeAgent(
+    appointmentTypeAgentId: number,
+  ): Promise<Day[]> {
+    return await this.repo.find({
+      where: { appointmentTypeAgent: { appointmentTypeAgentId } },
+    });
+  }
+
   async getById(dayId: number): Promise<Day> {
     const day = await this.repo.findOne({
       where: { dayId },
@@ -33,6 +41,12 @@ export class DayService {
       startingHour: createDto.startingHour,
     });
 
+    return await this.repo.save(day);
+  }
+
+  async update(dayId: number, attrs: Partial<Day>): Promise<Day> {
+    const day = await this.getById(dayId);
+    Object.assign(day, attrs);
     return await this.repo.save(day);
   }
 

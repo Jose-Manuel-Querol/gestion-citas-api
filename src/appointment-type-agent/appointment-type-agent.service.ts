@@ -6,7 +6,7 @@ import { AppointmentTypeService } from '../appointment-type/appointment-type.ser
 import { DayService } from '../day/day.service';
 import { AgentService } from '../agent/agent.service';
 import { CreateManyAppointmentTypeAgent } from './dtos/create-many-appointment-type-agent.dto';
-
+import { UpdateManyAppointmentTypeAgent } from './dtos/update-many-appointment-type-agent.dto';
 @Injectable()
 export class AppointmentTypeAgentService {
   constructor(
@@ -86,6 +86,61 @@ export class AppointmentTypeAgentService {
       appointmentTypeAgents.push(appointmentTypeAgent);
     }
 
+    return appointmentTypeAgents;
+  }
+
+  async updateMany(
+    updateDto: UpdateManyAppointmentTypeAgent,
+  ): Promise<AppointmentTypeAgent[]> {
+    const appointmentTypeAgents: AppointmentTypeAgent[] = [];
+    for (let i = 0; i < updateDto.appointmentTypeAgents.length; i++) {
+      const appointmentTypeAgent = await this.getById(
+        updateDto.appointmentTypeAgents[i].appointmentTypeAgentId,
+      );
+      const appointmentType = await this.appointmentTypeService.getById(
+        updateDto.appointmentTypeAgents[i].appointmentTypeId,
+      );
+      const days = appointmentTypeAgent.days;
+      const currentDayIds = days.map((day) => day.dayId);
+      const newDayIds = updateDto.appointmentTypeAgents[i].days.map(
+        (day) => day.dayId,
+      );
+      const dayIdsToDelete = currentDayIds.filter(
+        (dayId) => !newDayIds.includes(dayId),
+      );
+      if (dayIdsToDelete.length > 0) {
+        for (let f = 0; f < dayIdsToDelete.length; f++) {
+          await this.dayService.delete(dayIdsToDelete[f]);
+        }
+      }
+      if (
+        appointmentTypeAgent.appointmentType.appointmentTypeId !==
+        appointmentType.appointmentTypeId
+      ) {
+        appointmentTypeAgent.appointmentType = appointmentType;
+        await this.repo.save(appointmentTypeAgent);
+      }
+      for (let e = 0; e < updateDto.appointmentTypeAgents[i].days.length; e++) {
+        if (updateDto.appointmentTypeAgents[i].days[e].dayId) {
+          await this.dayService.update(
+            updateDto.appointmentTypeAgents[i].days[e].dayId,
+            updateDto.appointmentTypeAgents[i].days[e],
+          );
+        } else {
+          await this.dayService.create(
+            {
+              active: updateDto.appointmentTypeAgents[i].days[e].active,
+              dayName: updateDto.appointmentTypeAgents[i].days[e].dayName,
+              endingHour: updateDto.appointmentTypeAgents[i].days[e].endingHour,
+              startingHour:
+                updateDto.appointmentTypeAgents[i].days[e].startingHour,
+            },
+            appointmentTypeAgent,
+          );
+        }
+      }
+      appointmentTypeAgents.push(appointmentTypeAgent);
+    }
     return appointmentTypeAgents;
   }
 
