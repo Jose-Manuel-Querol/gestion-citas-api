@@ -20,6 +20,9 @@ export class Agent {
   @Column()
   lastName: string;
 
+  @Column({ nullable: true, unique: true })
+  slug: string;
+
   @Column({ unique: true })
   email: string;
 

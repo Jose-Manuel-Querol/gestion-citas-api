@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { ZoneService } from '../zone/zone.service';
 import { CreateAgentDto } from './dtos/create-agent.dto';
 import { UpdateAgentDto } from './dtos/update-agent.dto';
+import { generateSlug } from '../shared/shared-functions';
 
 @Injectable()
 export class AgentService {
@@ -17,9 +18,28 @@ export class AgentService {
     return await this.repo.find({ relations: { zone: true } });
   }
 
+  async getAllBySlug(slug: string): Promise<Agent[]> {
+    return await this.repo.find({
+      where: { slug },
+      relations: { zone: true },
+    });
+  }
+
   async getById(agentId: number): Promise<Agent> {
     const agent = await this.repo.findOne({
       where: { agentId },
+      relations: { zone: true },
+    });
+    if (!agent) {
+      throw new NotFoundException('El agente no fue encontrado');
+    }
+
+    return agent;
+  }
+
+  async getBySlug(slug: string): Promise<Agent> {
+    const agent = await this.repo.findOne({
+      where: { slug },
       relations: { zone: true },
     });
     if (!agent) {
@@ -42,6 +62,15 @@ export class AgentService {
       vacationStart: createDto.vacationStart,
       zone,
     });
+
+    let baseSlug = generateSlug(createDto.firstName + ' ' + createDto.lastName);
+    let agents = await this.getAllBySlug(baseSlug);
+    while (agents.length > 0) {
+      const randomDigit = Math.floor(Math.random() * 100);
+      baseSlug = `${baseSlug}${randomDigit}`;
+      agents = await this.getAllBySlug(baseSlug);
+    }
+    agent.slug = baseSlug;
 
     return await this.repo.save(agent);
   }
@@ -74,6 +103,10 @@ export class AgentService {
 
     if (updateDto.vacationEnd) {
       agent.vacationEnd = updateDto.vacationEnd;
+    }
+
+    if (updateDto.vacationStart) {
+      agent.vacationStart = updateDto.vacationStart;
     }
 
     if (updateDto.vacationStart) {

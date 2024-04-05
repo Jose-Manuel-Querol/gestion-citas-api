@@ -31,6 +31,12 @@ export class AgentController {
   }
 
   @UseGuards(JwtAccountGuard)
+  @Get('by-slug/:slug')
+  async getAgentBySlug(@Param('slug') slug: string): Promise<Agent> {
+    return await this.agentService.getBySlug(slug);
+  }
+
+  @UseGuards(JwtAccountGuard)
   @Post()
   async createAgent(@Body() body: CreateAgentDto): Promise<Agent> {
     return await this.agentService.create(body);
