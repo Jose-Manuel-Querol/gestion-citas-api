@@ -8,7 +8,7 @@ export class SignUpAccountDto {
   @IsString()
   password: string;
 
-  @IsNotEmpty()
+  /*@IsNotEmpty()
   @IsString()
-  confirmPassword: string;
+  confirmPassword: string;*/
 }
