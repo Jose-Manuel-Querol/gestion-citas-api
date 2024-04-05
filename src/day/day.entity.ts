@@ -15,6 +15,9 @@ export class Day {
   @PrimaryGeneratedColumn()
   dayId: number;
 
+  @Column({ nullable: true })
+  dayDate: Date;
+
   @Column()
   dayName: string;
 

@@ -11,6 +11,10 @@ export class DayDto {
 
   @IsOptional()
   @IsString()
+  dayDate: Date;
+
+  @IsOptional()
+  @IsString()
   startingHour: string;
 
   @IsOptional()

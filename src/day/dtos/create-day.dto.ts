@@ -6,6 +6,10 @@ export class CreateDayDto {
 
   @IsNotEmpty()
   @IsString()
+  dayDate: Date;
+
+  @IsNotEmpty()
+  @IsString()
   startingHour: string;
 
   @IsNotEmpty()

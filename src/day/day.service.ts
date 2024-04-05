@@ -39,6 +39,7 @@ export class DayService {
       dayName: createDto.dayName,
       endingHour: createDto.endingHour,
       startingHour: createDto.startingHour,
+      dayDate: createDto.dayDate,
     });
 
     return await this.repo.save(day);

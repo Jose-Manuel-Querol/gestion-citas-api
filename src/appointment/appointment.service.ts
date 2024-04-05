@@ -36,8 +36,8 @@ export class AppointmentService {
     const { monday, friday } = getWeekBounds(currentDate);
     return await this.repo.find({
       where: {
-        createdAt: Between(monday, friday),
         cancelled: false,
+        day: { dayDate: Between(monday, friday) },
       },
       relations: {
         appointmentTypeAgent: { appointmentType: true, agent: true },
