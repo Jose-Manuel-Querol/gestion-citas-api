@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Appointment } from './appointment.entity';
-import { Between, Repository } from 'typeorm';
+import { Between, In, Repository } from 'typeorm';
 import { DayService } from '../day/day.service';
 import { AppointmentTypeAgentService } from '../appointment-type-agent/appointment-type-agent.service';
 import { LocationService } from '../location/location.service';
@@ -9,7 +9,7 @@ import { CreateAppointmentDto } from './dtos/create-appointment.dto';
 import { CancelManyAppointments } from './dtos/cancel-many-appointments.dto';
 import {
   generateFiveDigitNumber,
-  getWeekBounds,
+  getDayAfterTomorrow,
 } from '../shared/shared-functions';
 
 @Injectable()
@@ -31,13 +31,17 @@ export class AppointmentService {
     });
   }
 
-  async getAllWithinWeek(): Promise<Appointment[]> {
+  async getAllWithinDayAfterTomorrow(): Promise<Appointment[]> {
     const currentDate = new Date();
-    const { monday, friday } = getWeekBounds(currentDate);
+    const currentDateString = currentDate.toISOString();
+    const afterTomorrowStart = getDayAfterTomorrow(currentDate);
+    const afterTomorrowEnd = new Date(afterTomorrowStart);
+    afterTomorrowEnd.setUTCHours(23, 59, 59, 999);
+    const afterTomorrowEndString = afterTomorrowEnd.toISOString();
     return await this.repo.find({
       where: {
         cancelled: false,
-        day: { dayDate: Between(monday, friday) },
+        day: { dayDate: Between(currentDateString, afterTomorrowEndString) },
       },
       relations: {
         appointmentTypeAgent: { appointmentType: true, agent: true },
@@ -45,6 +49,158 @@ export class AppointmentService {
         day: true,
       },
     });
+  }
+
+  async getAllWithinDatesByAgents(
+    startingDate: string,
+    endingDate: string,
+    agentsId: number[],
+  ): Promise<Appointment[]> {
+    if (agentsId.length > 0) {
+      return await this.repo.find({
+        where: {
+          cancelled: false,
+          day: { dayDate: Between(startingDate, endingDate) },
+          appointmentTypeAgent: { agent: { agentId: In(agentsId) } },
+        },
+        relations: {
+          appointmentTypeAgent: { appointmentType: true, agent: true },
+          location: true,
+          day: true,
+        },
+      });
+    } else {
+      return await this.repo.find({
+        where: {
+          cancelled: false,
+          day: { dayDate: Between(startingDate, endingDate) },
+        },
+        relations: {
+          appointmentTypeAgent: { appointmentType: true, agent: true },
+          location: true,
+          day: true,
+        },
+      });
+    }
+  }
+
+  async getAllWithinDatesByAppointmentTypes(
+    startingDate: string,
+    endingDate: string,
+    appointmentTypeIds: number[],
+  ): Promise<Appointment[]> {
+    if (appointmentTypeIds.length > 0) {
+      return await this.repo.find({
+        where: {
+          cancelled: false,
+          day: { dayDate: Between(startingDate, endingDate) },
+          appointmentTypeAgent: {
+            appointmentType: { appointmentTypeId: In(appointmentTypeIds) },
+          },
+        },
+        relations: {
+          appointmentTypeAgent: { appointmentType: true, agent: true },
+          location: true,
+          day: true,
+        },
+      });
+    } else {
+      return await this.repo.find({
+        where: {
+          cancelled: false,
+          day: { dayDate: Between(startingDate, endingDate) },
+        },
+        relations: {
+          appointmentTypeAgent: { appointmentType: true, agent: true },
+          location: true,
+          day: true,
+        },
+      });
+    }
+  }
+
+  async getAllCancelledWithinDatesByAgents(
+    startingDate: string,
+    endingDate: string,
+    agentsId: number[],
+  ): Promise<Appointment[]> {
+    if (agentsId.length > 0) {
+      return await this.repo.find({
+        where: {
+          cancelled: true,
+          day: { dayDate: Between(startingDate, endingDate) },
+          appointmentTypeAgent: { agent: { agentId: In(agentsId) } },
+        },
+        relations: {
+          appointmentTypeAgent: { appointmentType: true, agent: true },
+          location: true,
+          day: true,
+        },
+      });
+    } else {
+      return await this.repo.find({
+        where: {
+          cancelled: true,
+          day: { dayDate: Between(startingDate, endingDate) },
+        },
+        relations: {
+          appointmentTypeAgent: { appointmentType: true, agent: true },
+          location: true,
+          day: true,
+        },
+      });
+    }
+  }
+
+  async getAllWithinDates(
+    startingDate: string,
+    endingDate: string,
+    typeName?: string,
+    clientName?: string,
+    firstName?: string,
+    code?: string,
+  ): Promise<Appointment[]> {
+    const queryBuilder = this.repo.createQueryBuilder('appointment');
+    queryBuilder
+      .leftJoinAndSelect(
+        'appointment.appointmentTypeAgent',
+        'appointmentTypeAgent',
+      )
+      .leftJoinAndSelect(
+        'appointmentTypeAgent.appointmentType',
+        'appointmentType',
+      )
+      .leftJoinAndSelect('appointment.day', 'day')
+      .leftJoinAndSelect('appointmentTypeAgent.agent', 'agent')
+      .leftJoinAndSelect('appointment.location', 'location');
+
+    // Mandatory conditions
+    queryBuilder
+      .where('appointment.cancelled = :cancelled', { cancelled: false })
+      .andWhere('day.dayDate BETWEEN :startingDate AND :endingDate', {
+        startingDate,
+        endingDate,
+      });
+
+    // Optional conditions
+    if (clientName) {
+      queryBuilder.andWhere('appointment.clientName = :clientName', {
+        clientName,
+      });
+    }
+    if (code) {
+      queryBuilder.andWhere('appointment.code = :code', { code });
+    }
+    if (typeName) {
+      queryBuilder.andWhere('appointmentType.typeName = :typeName', {
+        typeName,
+      });
+    }
+    if (firstName) {
+      queryBuilder.andWhere('agent.firstName = :firstName', { firstName });
+    }
+
+    return await queryBuilder.getMany();
   }
 
   async getAllActive(): Promise<Appointment[]> {

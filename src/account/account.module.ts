@@ -9,6 +9,8 @@ import { JwtModule } from '@nestjs/jwt';
 import { SendgridService } from '../shared/sendgrid.service';
 import { AccountJwtStrategy } from './account-auth/account.jwt.strategy';
 import { AccountLocalStrategy } from './account-auth/account.local.strategy';
+import { RoleModule } from '../role/role.module';
+import { AgentModule } from '../agent/agent.module';
 
 @Module({
   imports: [
@@ -22,6 +24,8 @@ import { AccountLocalStrategy } from './account-auth/account.local.strategy';
       }),
       inject: [ConfigService],
     }),
+    RoleModule,
+    AgentModule,
   ],
   controllers: [AccountController],
   providers: [

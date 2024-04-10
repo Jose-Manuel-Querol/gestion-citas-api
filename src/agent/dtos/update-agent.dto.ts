@@ -1,4 +1,5 @@
 import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { UpdateManyAppointmentTypeAgent } from '../../appointment-type-agent/dtos/update-many-appointment-type-agent.dto';
 export class UpdateAgentDto {
   @IsOptional()
   @IsString()
@@ -15,6 +16,10 @@ export class UpdateAgentDto {
   @IsOptional()
   @IsString()
   city?: string;
+
+  @IsOptional()
+  @IsString()
+  dni: string;
 
   @IsOptional()
   @IsString()
@@ -39,4 +44,7 @@ export class UpdateAgentDto {
   @IsOptional()
   @IsNumber()
   zoneId?: number;
+
+  @IsOptional()
+  appointmentTypeAgents: UpdateManyAppointmentTypeAgent;
 }

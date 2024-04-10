@@ -1,4 +1,5 @@
-import { Expose } from 'class-transformer';
+import { Expose, Transform } from 'class-transformer';
+import { Role } from '../../role/role.entity';
 
 export class AccountDto {
   @Expose()
@@ -15,4 +16,8 @@ export class AccountDto {
 
   @Expose()
   createdAt: Date;
+
+  @Expose()
+  @Transform(({ obj }) => obj.role)
+  role: Role;
 }

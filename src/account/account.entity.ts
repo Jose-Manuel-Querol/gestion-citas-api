@@ -2,8 +2,13 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { Role } from '../role/role.entity';
+import { Agent } from '../agent/agent.entity';
 
 @Entity()
 export class Account {
@@ -24,4 +29,16 @@ export class Account {
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @ManyToOne(() => Role, (role) => role.accounts, {
+    onDelete: 'SET NULL',
+  })
+  role: Role;
+
+  @OneToOne(() => Agent, (agent) => agent.account, {
+    cascade: true,
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn()
+  agent: Agent;
 }

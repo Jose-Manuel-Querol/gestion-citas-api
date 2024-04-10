@@ -5,13 +5,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppointmentTypeAgent } from './appointment-type-agent.entity';
 import { AppointmentTypeModule } from '../appointment-type/appointment-type.module';
 import { DayModule } from '../day/day.module';
-import { AgentModule } from '../agent/agent.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([AppointmentTypeAgent]),
     AppointmentTypeModule,
-    AgentModule,
     DayModule,
   ],
   controllers: [AppointmentTypeAgentController],

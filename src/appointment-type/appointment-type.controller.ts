@@ -13,18 +13,22 @@ import { JwtAccountGuard } from '../account/account-auth/account-guards/account.
 import { AppointmentType } from './appointment-type.entity';
 import { CreateAppointmentTypeDto } from './dtos/create-appointment-type.dto';
 import { UpdateAppointmentTypeDto } from './dtos/update-appointment-type.dto';
+import { RolesGuard } from '../account/account-auth/account-guards/roles.guard';
+import { Roles } from '../shared/roles.decorator';
 
 @Controller('appointment-type')
 export class AppointmentTypeController {
   constructor(private appointmentTypeService: AppointmentTypeService) {}
 
-  @UseGuards(JwtAccountGuard)
+  @UseGuards(JwtAccountGuard, RolesGuard)
+  @Roles('Admin')
   @Get()
   async getAllAppointmentTypes(): Promise<AppointmentType[]> {
     return await this.appointmentTypeService.getAll();
   }
 
-  @UseGuards(JwtAccountGuard)
+  @UseGuards(JwtAccountGuard, RolesGuard)
+  @Roles('Admin')
   @Get('/:id')
   async getOneAppointmentType(
     @Param('id') appointmentTypeId: string,
@@ -34,7 +38,8 @@ export class AppointmentTypeController {
     );
   }
 
-  @UseGuards(JwtAccountGuard)
+  @UseGuards(JwtAccountGuard, RolesGuard)
+  @Roles('Admin')
   @Post()
   async createAppointmentType(
     @Body() body: CreateAppointmentTypeDto,
@@ -42,7 +47,8 @@ export class AppointmentTypeController {
     return await this.appointmentTypeService.create(body);
   }
 
-  @UseGuards(JwtAccountGuard)
+  @UseGuards(JwtAccountGuard, RolesGuard)
+  @Roles('Admin')
   @Put('/:id')
   async updateAppointmentType(
     @Param('id') appointmentTypeId: string,
@@ -54,7 +60,8 @@ export class AppointmentTypeController {
     );
   }
 
-  @UseGuards(JwtAccountGuard)
+  @UseGuards(JwtAccountGuard, RolesGuard)
+  @Roles('Admin')
   @Delete('/:id')
   async deleteAppointmentType(@Param('id') appointmentTypeId: string) {
     return await this.appointmentTypeService.delete(

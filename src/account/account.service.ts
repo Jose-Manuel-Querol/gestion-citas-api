@@ -10,6 +10,8 @@ import { JwtService } from '@nestjs/jwt';
 import { randomBytes, scrypt as _scrypt } from 'crypto';
 import { promisify } from 'util';
 import { SignUpAccountDto } from './dtos/signup-account.dto';
+import { RoleService } from '../role/role.service';
+import { AgentService } from '../agent/agent.service';
 const scrypt = promisify(_scrypt);
 
 @Injectable()
@@ -17,10 +19,12 @@ export class AccountService {
   constructor(
     @InjectRepository(Account) private repo: Repository<Account>,
     private jwtService: JwtService,
+    private roleService: RoleService,
+    private agentService: AgentService,
   ) {}
 
   async getAll(): Promise<Account[]> {
-    const account = await this.repo.find();
+    const account = await this.repo.find({ relations: { role: true } });
 
     if (!account) {
       return null;
@@ -32,6 +36,7 @@ export class AccountService {
   async getByEmail(email: string) {
     const account = await this.repo.find({
       where: { email },
+      relations: { role: true },
     });
 
     if (!account) {
@@ -44,6 +49,7 @@ export class AccountService {
   async getById(accountId: number): Promise<Account> {
     const account = await this.repo.findOne({
       where: { accountId },
+      relations: { role: true },
     });
     if (!account) {
       throw new NotFoundException('La cuenta no fue encontrada');
@@ -58,7 +64,7 @@ export class AccountService {
     return result;
   }
 
-  async signupAccount(body: SignUpAccountDto) {
+  async signupAccount(body: SignUpAccountDto, roleName: string) {
     const accountsByEmail = await this.getByEmail(body.email);
 
     if (accountsByEmail.length) {
@@ -72,12 +78,18 @@ export class AccountService {
         'Error, las contraseñas que ingresó no son las mismas',
       );
     }*/
+    const role = await this.roleService.getByName(roleName);
 
     const hash = await this.hashPassword(body.password);
     const account = this.repo.create({
       email: body.email,
       password: hash,
+      role,
     });
+    if (roleName === 'Agent') {
+      const agent = await this.agentService.getById(body.agentId);
+      account.agent = agent;
+    }
     await this.repo.save(account);
 
     return await this.getById(account.accountId);
@@ -106,6 +118,7 @@ export class AccountService {
     return {
       access_token: this.jwtService.sign(payload),
       accountId: account.accountId,
+      role: account.role,
     };
   }
 

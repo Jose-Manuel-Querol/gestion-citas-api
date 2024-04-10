@@ -1,19 +1,16 @@
 import {
-  Body,
   Controller,
   Delete,
   Get,
   Param,
-  Post,
-  Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
 import { AppointmentTypeAgentService } from './appointment-type-agent.service';
 import { AppointmentTypeAgent } from './appointment-type-agent.entity';
-import { CreateManyAppointmentTypeAgent } from './dtos/create-many-appointment-type-agent.dto';
 import { JwtAccountGuard } from '../account/account-auth/account-guards/account.jwt.guard';
-import { UpdateManyAppointmentTypeAgent } from './dtos/update-many-appointment-type-agent.dto';
+import { RolesGuard } from '../account/account-auth/account-guards/roles.guard';
+import { Roles } from '../shared/roles.decorator';
 
 @Controller('appointment-type-agent')
 export class AppointmentTypeAgentController {
@@ -21,7 +18,8 @@ export class AppointmentTypeAgentController {
     private appointmentTypeAgentService: AppointmentTypeAgentService,
   ) {}
 
-  @UseGuards(JwtAccountGuard)
+  @UseGuards(JwtAccountGuard, RolesGuard)
+  @Roles('Admin')
   @Get()
   async getAllAppointmentTypeAgents(): Promise<AppointmentTypeAgent[]> {
     return await this.appointmentTypeAgentService.getAll();
@@ -37,7 +35,8 @@ export class AppointmentTypeAgentController {
     );
   }
 
-  @UseGuards(JwtAccountGuard)
+  @UseGuards(JwtAccountGuard, RolesGuard)
+  @Roles('Admin')
   @Get('by-appointment-type')
   async getAllAppointmentTypeAgentsByAppointmentType(
     @Query('appointmentTypeId') appointmentTypeId: string,
@@ -57,7 +56,8 @@ export class AppointmentTypeAgentController {
     );
   }
 
-  @UseGuards(JwtAccountGuard)
+  /*@UseGuards(JwtAccountGuard, RolesGuard)
+  @Roles('Admin')
   @Post()
   async createAppointmentTypeAgent(
     @Body() body: CreateManyAppointmentTypeAgent,
@@ -65,15 +65,17 @@ export class AppointmentTypeAgentController {
     return await this.appointmentTypeAgentService.createMany(body);
   }
 
-  @UseGuards(JwtAccountGuard)
+  @UseGuards(JwtAccountGuard, RolesGuard)
+  @Roles('Admin')
   @Put()
   async updateAppointmentTypeAgent(
     @Body() body: UpdateManyAppointmentTypeAgent,
   ): Promise<AppointmentTypeAgent[]> {
     return await this.appointmentTypeAgentService.updateMany(body);
-  }
+  }*/
 
-  @UseGuards(JwtAccountGuard)
+  @UseGuards(JwtAccountGuard, RolesGuard)
+  @Roles('Admin')
   @Delete('/:id')
   async deleteAppointmentTypeAgent(
     @Param('id') appointmentTypeAgentId: string,

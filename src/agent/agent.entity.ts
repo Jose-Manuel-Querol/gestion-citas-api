@@ -4,10 +4,12 @@ import {
   Entity,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Zone } from '../zone/zone.entity';
 import { AppointmentTypeAgent } from '../appointment-type-agent/appointment-type-agent.entity';
+import { Account } from '../account/account.entity';
 
 @Entity()
 export class Agent {
@@ -28,6 +30,9 @@ export class Agent {
 
   @Column({ nullable: true })
   city: string;
+
+  @Column({ nullable: true })
+  dni: string;
 
   @Column()
   phoneNumber: string;
@@ -58,4 +63,9 @@ export class Agent {
     },
   )
   appointmentTypeAgents: AppointmentTypeAgent[];
+
+  @OneToOne(() => Account, (account) => account.agent, {
+    onDelete: 'SET NULL',
+  })
+  account: Account;
 }

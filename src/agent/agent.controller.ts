@@ -13,36 +13,43 @@ import { Agent } from './agent.entity';
 import { CreateAgentDto } from './dtos/create-agent.dto';
 import { UpdateAgentDto } from './dtos/update-agent.dto';
 import { JwtAccountGuard } from '../account/account-auth/account-guards/account.jwt.guard';
+import { RolesGuard } from '../account/account-auth/account-guards/roles.guard';
+import { Roles } from '../shared/roles.decorator';
 
 @Controller('agent')
 export class AgentController {
   constructor(private agentService: AgentService) {}
 
-  @UseGuards(JwtAccountGuard)
+  @UseGuards(JwtAccountGuard, RolesGuard)
+  @Roles('Admin')
   @Get()
   async getAllAgents(): Promise<Agent[]> {
     return await this.agentService.getAll();
   }
 
-  @UseGuards(JwtAccountGuard)
+  @UseGuards(JwtAccountGuard, RolesGuard)
+  @Roles('Admin')
   @Get('/:id')
   async getAgentById(@Param('id') agentId: string): Promise<Agent> {
     return await this.agentService.getById(parseInt(agentId));
   }
 
-  @UseGuards(JwtAccountGuard)
+  @UseGuards(JwtAccountGuard, RolesGuard)
+  @Roles('Admin')
   @Get('by-slug/:slug')
   async getAgentBySlug(@Param('slug') slug: string): Promise<Agent> {
     return await this.agentService.getBySlug(slug);
   }
 
-  @UseGuards(JwtAccountGuard)
+  @UseGuards(JwtAccountGuard, RolesGuard)
+  @Roles('Admin')
   @Post()
   async createAgent(@Body() body: CreateAgentDto): Promise<Agent> {
     return await this.agentService.create(body);
   }
 
-  @UseGuards(JwtAccountGuard)
+  @UseGuards(JwtAccountGuard, RolesGuard)
+  @Roles('Admin')
   @Put('/:id')
   async updateAgent(
     @Param('id') agentId: string,
@@ -51,7 +58,8 @@ export class AgentController {
     return await this.agentService.update(parseInt(agentId), body);
   }
 
-  @UseGuards(JwtAccountGuard)
+  @UseGuards(JwtAccountGuard, RolesGuard)
+  @Roles('Admin')
   @Delete('/:id')
   async deleteAgent(@Param('id') agentId: string): Promise<Agent> {
     return await this.agentService.delete(parseInt(agentId));

@@ -4,9 +4,9 @@ import { AppointmentTypeAgent } from './appointment-type-agent.entity';
 import { Repository } from 'typeorm';
 import { AppointmentTypeService } from '../appointment-type/appointment-type.service';
 import { DayService } from '../day/day.service';
-import { AgentService } from '../agent/agent.service';
 import { CreateManyAppointmentTypeAgent } from './dtos/create-many-appointment-type-agent.dto';
 import { UpdateManyAppointmentTypeAgent } from './dtos/update-many-appointment-type-agent.dto';
+import { Agent } from '../agent/agent.entity';
 @Injectable()
 export class AppointmentTypeAgentService {
   constructor(
@@ -14,7 +14,6 @@ export class AppointmentTypeAgentService {
     private repo: Repository<AppointmentTypeAgent>,
     private appointmentTypeService: AppointmentTypeService,
     private dayService: DayService,
-    private agentService: AgentService,
   ) {}
 
   async getAll(): Promise<AppointmentTypeAgent[]> {
@@ -54,8 +53,8 @@ export class AppointmentTypeAgentService {
 
   async createMany(
     createDto: CreateManyAppointmentTypeAgent,
+    agent: Agent,
   ): Promise<AppointmentTypeAgent[]> {
-    const agent = await this.agentService.getById(createDto.agentId);
     const appointmentTypeAgents: AppointmentTypeAgent[] = [];
     for (let i = 0; i < createDto.createAppointmentTypeAgents.length; i++) {
       const appointmentType = await this.appointmentTypeService.getById(

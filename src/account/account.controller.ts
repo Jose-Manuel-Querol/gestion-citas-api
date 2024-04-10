@@ -26,6 +26,8 @@ import { ForgotPasswordDto } from './dtos/forgot-password.dto';
 import { generateFiveDigitNumber } from '../shared/shared-functions';
 import { ValidateTokenDto } from './dtos/validate-token.dto';
 import { RecoverPasswordDto } from './dtos/recover-password.dto';
+import { RolesGuard } from './account-auth/account-guards/roles.guard';
+import { Roles } from '../shared/roles.decorator';
 
 @Controller('account')
 export class AccountController {
@@ -34,21 +36,24 @@ export class AccountController {
     private sendgridService: SendgridService,
   ) {}
 
-  @UseGuards(JwtAccountGuard)
+  @UseGuards(JwtAccountGuard, RolesGuard)
+  @Roles('Admin')
   @Get()
   async getAllAccounts(): Promise<Account[]> {
     return await this.accountService.getAll();
   }
 
   @Serialize(AccountDto)
-  @UseGuards(JwtAccountGuard)
+  @UseGuards(JwtAccountGuard, RolesGuard)
+  @Roles('Admin')
   @Get('by-email')
   async getAllByEmail(@Query('email') email: string): Promise<Account[]> {
     return await this.accountService.getByEmail(email);
   }
 
   @Serialize(AccountDto)
-  @UseGuards(JwtAccountGuard)
+  @UseGuards(JwtAccountGuard, RolesGuard)
+  @Roles('Admin')
   @Get('/:id')
   async getOneAccount(@Param('id') accountId: string): Promise<Account> {
     const account = await this.accountService.getById(parseInt(accountId));
@@ -56,9 +61,16 @@ export class AccountController {
   }
 
   @Serialize(AccountDto)
-  @Post('/signup')
+  @Post('/signup-admin')
   async signupAdmin(@Body() body: SignUpAccountDto) {
-    const account = await this.accountService.signupAccount(body);
+    const account = await this.accountService.signupAccount(body, 'Admin');
+    return account;
+  }
+
+  @Serialize(AccountDto)
+  @Post('/signup-agent')
+  async signupAgent(@Body() body: SignUpAccountDto) {
+    const account = await this.accountService.signupAccount(body, 'Agent');
     return account;
   }
 
@@ -69,7 +81,8 @@ export class AccountController {
   }
 
   @Put('/:id')
-  @UseGuards(JwtAccountGuard)
+  @UseGuards(JwtAccountGuard, RolesGuard)
+  @Roles('Admin')
   @Serialize(AccountDto)
   async updateAccount(
     @Param('id') accountId: string,

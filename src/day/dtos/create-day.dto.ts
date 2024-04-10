@@ -1,12 +1,12 @@
-import { IsBoolean, IsNotEmpty, IsString } from 'class-validator';
+import { IsBoolean, IsISO8601, IsNotEmpty, IsString } from 'class-validator';
 export class CreateDayDto {
   @IsNotEmpty()
   @IsString()
   dayName: string;
 
   @IsNotEmpty()
-  @IsString()
-  dayDate: Date;
+  @IsISO8601()
+  dayDate: string;
 
   @IsNotEmpty()
   @IsString()

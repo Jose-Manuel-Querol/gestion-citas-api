@@ -6,29 +6,42 @@ import { ZoneService } from '../zone/zone.service';
 import { CreateAgentDto } from './dtos/create-agent.dto';
 import { UpdateAgentDto } from './dtos/update-agent.dto';
 import { generateSlug } from '../shared/shared-functions';
+import { AppointmentTypeAgentService } from '../appointment-type-agent/appointment-type-agent.service';
 
 @Injectable()
 export class AgentService {
   constructor(
     @InjectRepository(Agent) private repo: Repository<Agent>,
     private zoneService: ZoneService,
+    private appointmentTypeAgentService: AppointmentTypeAgentService,
   ) {}
 
   async getAll(): Promise<Agent[]> {
-    return await this.repo.find({ relations: { zone: true } });
+    return await this.repo.find({
+      relations: {
+        zone: true,
+        appointmentTypeAgents: { appointmentType: true, days: true },
+      },
+    });
   }
 
   async getAllBySlug(slug: string): Promise<Agent[]> {
     return await this.repo.find({
       where: { slug },
-      relations: { zone: true },
+      relations: {
+        zone: true,
+        appointmentTypeAgents: { appointmentType: true, days: true },
+      },
     });
   }
 
   async getById(agentId: number): Promise<Agent> {
     const agent = await this.repo.findOne({
       where: { agentId },
-      relations: { zone: true },
+      relations: {
+        zone: true,
+        appointmentTypeAgents: { appointmentType: true, days: true },
+      },
     });
     if (!agent) {
       throw new NotFoundException('El agente no fue encontrado');
@@ -40,7 +53,10 @@ export class AgentService {
   async getBySlug(slug: string): Promise<Agent> {
     const agent = await this.repo.findOne({
       where: { slug },
-      relations: { zone: true },
+      relations: {
+        zone: true,
+        appointmentTypeAgents: { appointmentType: true, days: true },
+      },
     });
     if (!agent) {
       throw new NotFoundException('El agente no fue encontrado');
@@ -61,6 +77,7 @@ export class AgentService {
       vacationEnd: createDto.vacationEnd,
       vacationStart: createDto.vacationStart,
       zone,
+      dni: createDto.dni,
     });
 
     let baseSlug = generateSlug(createDto.firstName + ' ' + createDto.lastName);
@@ -72,7 +89,12 @@ export class AgentService {
     }
     agent.slug = baseSlug;
 
-    return await this.repo.save(agent);
+    const createdAgent = await this.repo.save(agent);
+    await this.appointmentTypeAgentService.createMany(
+      createDto.appointmentTypeAgents,
+      createdAgent,
+    );
+    return await this.getById(createdAgent.agentId);
   }
 
   async update(agentId: number, updateDto: UpdateAgentDto): Promise<Agent> {
@@ -85,7 +107,7 @@ export class AgentService {
       agent.city = updateDto.city;
     }
 
-    if (updateDto.email) {
+    if (updateDto.email !== agent.email) {
       agent.email = updateDto.email;
     }
 
@@ -113,12 +135,20 @@ export class AgentService {
       agent.vacationStart = updateDto.vacationStart;
     }
 
+    if (updateDto.dni) {
+      agent.dni = updateDto.dni;
+    }
+
     if (updateDto.zoneId) {
       const zone = await this.zoneService.getById(updateDto.zoneId);
       agent.zone = zone;
     }
 
-    return await this.repo.save(agent);
+    await this.repo.save(agent);
+    await this.appointmentTypeAgentService.updateMany(
+      updateDto.appointmentTypeAgents,
+    );
+    return await this.getById(agentId);
   }
 
   async delete(agentId: number): Promise<Agent> {

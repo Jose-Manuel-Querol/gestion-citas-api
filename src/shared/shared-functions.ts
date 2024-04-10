@@ -13,17 +13,8 @@ export const adjustDate = (date: Date, days: number): Date => {
   return result;
 };
 
-export const getWeekBounds = (date: Date): { monday: Date; friday: Date } => {
-  const dayOfWeek = date.getDay();
-  const dayOffset = dayOfWeek === 0 ? -6 : 1; // If it's Sunday (0), set to -6 to get last Monday
-  const mondayOffset = dayOffset - dayOfWeek; // Calculate offset for Monday
-  const fridayOffset = 5 - dayOfWeek; // Calculate offset for Friday
-
-  const monday = adjustDate(date, mondayOffset);
-  const friday = adjustDate(date, fridayOffset);
-
-  // Adjust the Friday date to include the entire day
-  friday.setHours(23, 59, 59, 999);
-
-  return { monday, friday };
+export const getDayAfterTomorrow = (date: Date): string => {
+  const resultDate = new Date(date.getTime());
+  resultDate.setDate(resultDate.getDate() + 2);
+  return resultDate.toISOString();
 };
