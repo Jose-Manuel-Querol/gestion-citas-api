@@ -50,6 +50,23 @@ export class AgentService {
     return agent;
   }
 
+  async getByEmail(email: string): Promise<Agent> {
+    const agent = await this.repo.findOne({
+      where: { email },
+      relations: {
+        zone: true,
+        appointmentTypeAgents: { appointmentType: true, days: true },
+      },
+    });
+    if (!agent) {
+      throw new NotFoundException(
+        'No se encontro ningún agente con ese correo electrónico',
+      );
+    }
+
+    return agent;
+  }
+
   async getBySlug(slug: string): Promise<Agent> {
     const agent = await this.repo.findOne({
       where: { slug },

@@ -87,7 +87,7 @@ export class AccountService {
       role,
     });
     if (roleName === 'Agent') {
-      const agent = await this.agentService.getById(body.agentId);
+      const agent = await this.agentService.getByEmail(body.email);
       account.agent = agent;
     }
     await this.repo.save(account);

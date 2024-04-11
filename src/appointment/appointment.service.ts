@@ -184,20 +184,25 @@ export class AppointmentService {
 
     // Optional conditions
     if (clientName) {
-      queryBuilder.andWhere('appointment.clientName = :clientName', {
-        clientName,
+      queryBuilder.andWhere('appointment.clientName LIKE  :clientName', {
+        clientName: `%${clientName}%`,
       });
     }
     if (code) {
-      queryBuilder.andWhere('appointment.code = :code', { code });
-    }
-    if (typeName) {
-      queryBuilder.andWhere('appointmentType.typeName = :typeName', {
-        typeName,
+      queryBuilder.andWhere('appointment.code LIKE  :code', {
+        code: `%${code}%`,
       });
     }
+    if (typeName) {
+      queryBuilder.andWhere('appointmentType.typeName LIKE :typeName', {
+        typeName: `%${typeName}%`,
+      });
+    }
+
     if (firstName) {
-      queryBuilder.andWhere('agent.firstName = :firstName', { firstName });
+      queryBuilder.andWhere('agent.firstName LIKE  :firstName', {
+        firstName: `%${firstName}%`,
+      });
     }
 
     return await queryBuilder.getMany();

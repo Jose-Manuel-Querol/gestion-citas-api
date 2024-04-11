@@ -30,6 +30,13 @@ export class LocationService {
     return location;
   }
 
+  async getByAddressName(addressName: string): Promise<Location> {
+    return await this.repo.findOne({
+      where: { zone: { addresses: { addressName } } },
+      relations: { zone: true },
+    });
+  }
+
   async create(createDto: CreateLocationDto): Promise<Location> {
     const zone = await this.zoneService.getById(createDto.zoneId);
     const location = this.repo.create({
