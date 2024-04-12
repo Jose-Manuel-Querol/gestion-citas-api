@@ -39,6 +39,22 @@ export class LocationService {
     });
   }
 
+  async getByZone(zoneId: number): Promise<Location> {
+    const locations = await this.repo.find({
+      where: { zone: { zoneId } },
+      relations: { zone: true },
+    });
+
+    if (locations.length === 0) {
+      throw new NotFoundException(
+        'No se encontró ningún centro relacionado con la zona indicada',
+      );
+    }
+
+    const randomIndex = Math.floor(Math.random() * locations.length);
+    return locations[randomIndex];
+  }
+
   async create(createDto: CreateLocationDto): Promise<Location> {
     const zone = await this.zoneService.getById(createDto.zoneId);
     const location = this.repo.create({

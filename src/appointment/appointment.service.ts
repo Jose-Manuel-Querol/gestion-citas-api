@@ -240,7 +240,7 @@ export class AppointmentService {
     return appointment;
   }
 
-  async findAvailableAppointments(appointmentTypeId: number) {
+  async findAvailableAppointments(appointmentTypeId: number, zoneId: number) {
     // Step 1: Filter days and agents
     const targetDays = await this.dayService.filterDaysAndAgents(
       appointmentTypeId,
@@ -258,7 +258,8 @@ export class AppointmentService {
         );
         // Append the actual date to each day result
         const date = this.getDateForDayName(day.dayName);
-        return { ...availableSlotsAndDate, date: date.toISOString() };
+        const location = await this.locationService.getByZone(zoneId);
+        return { ...availableSlotsAndDate, date: date.toISOString(), location };
       }),
     );
 
