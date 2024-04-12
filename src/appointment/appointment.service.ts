@@ -264,36 +264,25 @@ export class AppointmentService {
   }
 
   private getDateForDayName(dayName: string): Date {
-    const dayNameMap = {
-      Lunes: 'Monday',
-      Martes: 'Tuesday',
-      Miércoles: 'Wednesday',
-      Jueves: 'Thursday',
-      Viernes: 'Friday',
-    };
-
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Normalize the time portion
-    const todayDayName = today.toLocaleDateString('en-US', { weekday: 'long' });
-
-    const dayOffset =
-      (Object.keys(dayNameMap).findIndex(
-        (key) => dayNameMap[key] === todayDayName,
-      ) +
-        1) %
-      5;
-    const targetDayOffset =
-      (Object.keys(dayNameMap).findIndex((key) => dayName === key) + 1) % 5;
-
-    // Calculate how many days to add to get from today's weekday to the target weekday
-    let daysToAdd = targetDayOffset - dayOffset;
-    if (daysToAdd < 0) {
-      daysToAdd += 5; // Ensure it's always a future date within the week
-    }
-
+    today.setHours(0, 0, 0, 0); // Normalize time part
     const date = new Date(today);
-    date.setDate(today.getDate() + daysToAdd);
-    return date;
+    let count = 0;
+
+    // Keep adding days until the correct day name is found
+    while (count < 7) {
+      // Prevent infinite loops
+      if (
+        this.dayService.mapDayEnglishToSpanish(
+          date.toLocaleDateString('en-US', { weekday: 'long' }),
+        ) === dayName
+      ) {
+        return date;
+      }
+      date.setDate(date.getDate() + 1);
+      count++;
+    }
+    return date; // fallback if not found in one week, shouldn't happen
   }
 
   private async calculateAvailableSlotsForDay(
