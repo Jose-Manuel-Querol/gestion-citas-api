@@ -22,6 +22,15 @@ import { GetAllAppointmentsByAppointmentType } from './dtos/get-all-appointments
 export class AppointmentController {
   constructor(private appointmentService: AppointmentService) {}
 
+  @Get('available-dates')
+  async getAllAvailableAppointments(
+    @Query('appointmentTypeId') appointmentTypeId: string,
+  ) {
+    return await this.appointmentService.findAvailableAppointments(
+      parseInt(appointmentTypeId),
+    );
+  }
+
   @Get('between-dates')
   async getAllWithinDates(
     @Query('startingDate') startingDate: string,

@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsISO8601, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class CreateAppointmentDto {
   @IsNotEmpty()
@@ -18,8 +18,8 @@ export class CreateAppointmentDto {
   startingHour: string;
 
   @IsNotEmpty()
-  @IsNumber()
-  dayNumber: number;
+  @IsISO8601()
+  dayDate: string;
 
   @IsNotEmpty()
   @IsNumber()

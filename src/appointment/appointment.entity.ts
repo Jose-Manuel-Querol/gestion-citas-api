@@ -36,8 +36,8 @@ export class Appointment {
   @Column({ nullable: true })
   cancelledBy: string;
 
-  @Column()
-  dayNumber: number;
+  @Column({ nullable: true, type: 'datetime' })
+  dayDate: string;
 
   @CreateDateColumn()
   createdAt: Date;

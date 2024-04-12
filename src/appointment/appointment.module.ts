@@ -6,6 +6,7 @@ import { Appointment } from './appointment.entity';
 import { DayModule } from '../day/day.module';
 import { AppointmentTypeAgentModule } from '../appointment-type-agent/appointment-type-agent.module';
 import { LocationModule } from '../location/location.module';
+import { AppointmentTypeModule } from '../appointment-type/appointment-type.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { LocationModule } from '../location/location.module';
     DayModule,
     AppointmentTypeAgentModule,
     LocationModule,
+    AppointmentTypeModule,
   ],
   controllers: [AppointmentController],
   providers: [AppointmentService],

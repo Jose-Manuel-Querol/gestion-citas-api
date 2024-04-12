@@ -78,7 +78,6 @@ export class AppointmentTypeAgentService {
               createDto.createAppointmentTypeAgents[i].days[e].endingHour,
             startingHour:
               createDto.createAppointmentTypeAgents[i].days[e].startingHour,
-            dayDate: createDto.createAppointmentTypeAgents[i].days[e].dayDate,
           },
           appointmentTypeAgent,
         );
@@ -134,7 +133,6 @@ export class AppointmentTypeAgentService {
               endingHour: updateDto.appointmentTypeAgents[i].days[e].endingHour,
               startingHour:
                 updateDto.appointmentTypeAgents[i].days[e].startingHour,
-              dayDate: updateDto.appointmentTypeAgents[i].days[e].dayDate,
             },
             appointmentTypeAgent,
           );

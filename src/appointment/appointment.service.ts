@@ -11,6 +11,9 @@ import {
   generateFiveDigitNumber,
   getDayAfterTomorrow,
 } from '../shared/shared-functions';
+import { Day } from '../day/day.entity';
+import * as moment from 'moment';
+import { AppointmentTypeService } from '../appointment-type/appointment-type.service';
 
 @Injectable()
 export class AppointmentService {
@@ -18,6 +21,7 @@ export class AppointmentService {
     @InjectRepository(Appointment) private repo: Repository<Appointment>,
     private dayService: DayService,
     private appointmentTypeAgentService: AppointmentTypeAgentService,
+    private appointmentTypeService: AppointmentTypeService,
     private locationService: LocationService,
   ) {}
 
@@ -41,7 +45,7 @@ export class AppointmentService {
     return await this.repo.find({
       where: {
         cancelled: false,
-        day: { dayDate: Between(currentDateString, afterTomorrowEndString) },
+        dayDate: Between(currentDateString, afterTomorrowEndString),
       },
       relations: {
         appointmentTypeAgent: { appointmentType: true, agent: true },
@@ -60,7 +64,7 @@ export class AppointmentService {
       return await this.repo.find({
         where: {
           cancelled: false,
-          day: { dayDate: Between(startingDate, endingDate) },
+          dayDate: Between(startingDate, endingDate),
           appointmentTypeAgent: { agent: { agentId: In(agentsId) } },
         },
         relations: {
@@ -73,7 +77,7 @@ export class AppointmentService {
       return await this.repo.find({
         where: {
           cancelled: false,
-          day: { dayDate: Between(startingDate, endingDate) },
+          dayDate: Between(startingDate, endingDate),
         },
         relations: {
           appointmentTypeAgent: { appointmentType: true, agent: true },
@@ -93,7 +97,7 @@ export class AppointmentService {
       return await this.repo.find({
         where: {
           cancelled: false,
-          day: { dayDate: Between(startingDate, endingDate) },
+          dayDate: Between(startingDate, endingDate),
           appointmentTypeAgent: {
             appointmentType: { appointmentTypeId: In(appointmentTypeIds) },
           },
@@ -108,7 +112,7 @@ export class AppointmentService {
       return await this.repo.find({
         where: {
           cancelled: false,
-          day: { dayDate: Between(startingDate, endingDate) },
+          dayDate: Between(startingDate, endingDate),
         },
         relations: {
           appointmentTypeAgent: { appointmentType: true, agent: true },
@@ -128,7 +132,7 @@ export class AppointmentService {
       return await this.repo.find({
         where: {
           cancelled: true,
-          day: { dayDate: Between(startingDate, endingDate) },
+          dayDate: Between(startingDate, endingDate),
           appointmentTypeAgent: { agent: { agentId: In(agentsId) } },
         },
         relations: {
@@ -141,7 +145,7 @@ export class AppointmentService {
       return await this.repo.find({
         where: {
           cancelled: true,
-          day: { dayDate: Between(startingDate, endingDate) },
+          dayDate: Between(startingDate, endingDate),
         },
         relations: {
           appointmentTypeAgent: { appointmentType: true, agent: true },
@@ -236,6 +240,70 @@ export class AppointmentService {
     return appointment;
   }
 
+  async findAvailableAppointments(appointmentTypeId: number) {
+    // Step 1: Filter days and agents
+    const targetDays = await this.dayService.filterDaysAndAgents(
+      appointmentTypeId,
+    );
+
+    // Step 2: Calculate available time slots for each day
+    const availability = await Promise.all(
+      targetDays.map((day) =>
+        this.calculateAvailableSlotsForDay(day, appointmentTypeId),
+      ),
+    );
+
+    // Step 3: Build and return the response
+    return availability.filter((day) => day.availableSlots.length > 0);
+  }
+
+  private async calculateAvailableSlotsForDay(
+    day: Day,
+    appointmentTypeId: number,
+  ): Promise<{ day: Day; availableSlots: string[] }> {
+    // Fetch appointment type to get the duration for appointments
+    const appointmentType = await this.appointmentTypeService.getById(
+      appointmentTypeId,
+    );
+
+    if (!appointmentType) throw new Error('Appointment type not found.');
+
+    const duration = parseInt(appointmentType.duration); // Convert duration to an integer, assuming it's stored in minutes
+
+    // Generate slots for the day based on startingHour and endingHour from the Day entity
+    const slots = [];
+    let currentTimeSlotStart = moment(day.startingHour, 'HH:mm');
+    const endTime = moment(day.endingHour, 'HH:mm');
+
+    while (currentTimeSlotStart.add(duration, 'minutes').isBefore(endTime)) {
+      const slotEnd = moment(currentTimeSlotStart).add(duration, 'minutes');
+      slots.push(
+        `${currentTimeSlotStart.format('HH:mm')} to ${slotEnd.format('HH:mm')}`,
+      );
+      currentTimeSlotStart = slotEnd;
+    }
+
+    // Fetch appointments for the day to check which slots are already booked
+    const appointments = await this.repo.find({
+      where: {
+        day: { dayId: day.dayId },
+        appointmentTypeAgent: {
+          appointmentType: { appointmentTypeId },
+        },
+        cancelled: false,
+      },
+    });
+
+    // Map appointments to their starting hours for comparison
+    const bookedTimes = appointments.map((a) => a.startingHour);
+    // Filter out slots that have been booked
+    const availableSlots = slots.filter(
+      (slot) => !bookedTimes.includes(slot.split(' to ')[0]),
+    );
+
+    return { day, availableSlots };
+  }
+
   async create(createDto: CreateAppointmentDto): Promise<Appointment> {
     const day = await this.dayService.getById(createDto.dayId);
     const appointmentTypeAgent = await this.appointmentTypeAgentService.getById(
@@ -249,7 +317,7 @@ export class AppointmentService {
       clientPhoneNumber: createDto.clientPhoneNumber,
       clientName: createDto.clientName,
       day,
-      dayNumber: createDto.dayNumber,
+      dayDate: createDto.dayDate,
       location,
       startingHour: createDto.startingHour,
       code,
@@ -285,7 +353,7 @@ export class AppointmentService {
     appointment.clientAddress = updateDto.clientAddress;
     appointment.clientName = updateDto.clientName;
     appointment.clientPhoneNumber = updateDto.clientPhoneNumber;
-    appointment.dayNumber = updateDto.dayNumber;
+    appointment.dayDate = updateDto.dayDate;
     appointment.startingHour = updateDto.startingHour;
     const code = generateFiveDigitNumber().toString();
     appointment.code = code;

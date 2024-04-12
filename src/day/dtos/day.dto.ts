@@ -1,10 +1,4 @@
-import {
-  IsBoolean,
-  IsISO8601,
-  IsNumber,
-  IsOptional,
-  IsString,
-} from 'class-validator';
+import { IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class DayDto {
   @IsOptional()
@@ -14,10 +8,6 @@ export class DayDto {
   @IsOptional()
   @IsString()
   dayName: string;
-
-  @IsOptional()
-  @IsISO8601()
-  dayDate: string;
 
   @IsOptional()
   @IsString()
