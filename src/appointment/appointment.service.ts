@@ -246,8 +246,11 @@ export class AppointmentService {
       appointmentTypeId,
     );
 
+    // Temporary dictionary to track unique dates
+    const uniqueDates = new Map();
+
     // Step 2: Calculate available time slots for each day
-    const availability = await Promise.all(
+    const rawAvailability = await Promise.all(
       targetDays.map(async (day) => {
         const availableSlotsAndDate = await this.calculateAvailableSlotsForDay(
           day,
@@ -259,30 +262,41 @@ export class AppointmentService {
       }),
     );
 
-    // Step 3: Build and return the response
-    return availability.filter((day) => day.availableSlots.length > 0);
+    // Step 3: Filter out duplicates by date and ensure only days with available slots are included
+    const availability = rawAvailability.filter((entry) => {
+      const dateKey = entry.date.split('T')[0]; // Extract only the date part
+      if (uniqueDates.has(dateKey)) {
+        return false;
+      }
+      uniqueDates.set(dateKey, true);
+      return entry.availableSlots.length > 0;
+    });
+
+    return availability;
   }
 
-  private getDateForDayName(dayName: string): Date {
+  private getDateForDayName(dayName: string, additionalWeeks = 0): Date {
     const today = new Date();
     today.setHours(0, 0, 0, 0); // Normalize time part
     const date = new Date(today);
     let count = 0;
 
-    // Keep adding days until the correct day name is found
-    while (count < 7) {
-      // Prevent infinite loops
+    // Iterate more than 7 days to find multiple occurrences
+    while (count < 7 + 7 * additionalWeeks) {
       if (
         this.dayService.mapDayEnglishToSpanish(
           date.toLocaleDateString('en-US', { weekday: 'long' }),
         ) === dayName
       ) {
-        return date;
+        if (additionalWeeks === 0) {
+          return date;
+        }
+        additionalWeeks--;
       }
       date.setDate(date.getDate() + 1);
       count++;
     }
-    return date; // fallback if not found in one week, shouldn't happen
+    return date; // fallback, shouldn't happen
   }
 
   private async calculateAvailableSlotsForDay(
