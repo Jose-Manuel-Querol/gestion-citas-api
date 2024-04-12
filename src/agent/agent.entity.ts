@@ -40,6 +40,12 @@ export class Agent {
   @Column()
   address: string;
 
+  @Column({ nullable: true })
+  addressNro: string;
+
+  @Column({ nullable: true })
+  fullAddress: string;
+
   @Column()
   vacationStart: string;
 

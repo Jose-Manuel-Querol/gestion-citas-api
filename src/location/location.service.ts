@@ -59,8 +59,10 @@ export class LocationService {
     const zone = await this.zoneService.getById(createDto.zoneId);
     const location = this.repo.create({
       zone,
-      address: createDto.address + ' ' + createDto.addressNro,
+      fullAddress: createDto.address + ' ' + createDto.addressNro,
       locationName: createDto.locationName,
+      address: createDto.address,
+      addressNro: createDto.addressNro,
     });
     return await this.repo.save(location);
   }
@@ -76,13 +78,14 @@ export class LocationService {
     }
 
     if (updateDto.address && updateDto.addressNro) {
-      location.address = updateDto.address + ' ' + updateDto.addressNro;
+      location.fullAddress = updateDto.address + ' ' + updateDto.addressNro;
+      location.address = updateDto.address;
+      location.addressNro = updateDto.addressNro;
     }
 
     if (updateDto.locationName) {
       location.locationName = updateDto.locationName;
     }
-
     return await this.repo.save(location);
   }
 

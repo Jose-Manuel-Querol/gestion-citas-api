@@ -21,6 +21,12 @@ export class Location {
   @Column()
   address: string;
 
+  @Column({ nullable: true })
+  addressNro: string;
+
+  @Column({ nullable: true })
+  fullAddress: string;
+
   @CreateDateColumn()
   createdAt: Date;
 

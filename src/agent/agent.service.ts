@@ -85,7 +85,9 @@ export class AgentService {
   async create(createDto: CreateAgentDto): Promise<Agent> {
     const zone = await this.zoneService.getById(createDto.zoneId);
     const agent = this.repo.create({
-      address: createDto.address + ' ' + createDto.addressNro,
+      fullAddress: createDto.address + ' ' + createDto.addressNro,
+      address: createDto.address,
+      addressNro: createDto.addressNro,
       city: createDto.city,
       email: createDto.city,
       firstName: createDto.firstName,
@@ -117,7 +119,9 @@ export class AgentService {
   async update(agentId: number, updateDto: UpdateAgentDto): Promise<Agent> {
     const agent = await this.getById(agentId);
     if (updateDto.address) {
-      agent.address = updateDto.address + ' ' + updateDto.addressNro;
+      agent.fullAddress = updateDto.address + ' ' + updateDto.addressNro;
+      agent.address = updateDto.address;
+      agent.addressNro = updateDto.addressNro;
     }
 
     if (updateDto.city) {
