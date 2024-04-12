@@ -53,6 +53,7 @@ export class DayService {
         'appointmentType',
       )
       .leftJoinAndSelect('appointmentTypeAgent.agent', 'agent')
+      .leftJoinAndSelect('agent.zone', 'zone')
       .where('appointmentType.appointmentTypeId = :appointmentTypeId', {
         appointmentTypeId,
       })

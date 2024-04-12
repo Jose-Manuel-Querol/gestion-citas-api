@@ -25,11 +25,11 @@ export class AppointmentController {
   @Get('available-dates')
   async getAllAvailableAppointments(
     @Query('appointmentTypeId') appointmentTypeId: string,
-    @Query('zoneId') zoneId: string,
+    //@Query('zoneId') zoneId: string,
   ) {
     return await this.appointmentService.findAvailableAppointments(
       parseInt(appointmentTypeId),
-      parseInt(zoneId),
+      //parseInt(zoneId),
     );
   }
 
