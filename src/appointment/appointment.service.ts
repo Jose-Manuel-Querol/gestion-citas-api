@@ -248,13 +248,52 @@ export class AppointmentService {
 
     // Step 2: Calculate available time slots for each day
     const availability = await Promise.all(
-      targetDays.map((day) =>
-        this.calculateAvailableSlotsForDay(day, appointmentTypeId),
-      ),
+      targetDays.map(async (day) => {
+        const availableSlotsAndDate = await this.calculateAvailableSlotsForDay(
+          day,
+          appointmentTypeId,
+        );
+        // Append the actual date to each day result
+        const date = this.getDateForDayName(day.dayName);
+        return { ...availableSlotsAndDate, date: date.toISOString() };
+      }),
     );
 
     // Step 3: Build and return the response
     return availability.filter((day) => day.availableSlots.length > 0);
+  }
+
+  private getDateForDayName(dayName: string): Date {
+    const dayNameMap = {
+      Lunes: 'Monday',
+      Martes: 'Tuesday',
+      Miércoles: 'Wednesday',
+      Jueves: 'Thursday',
+      Viernes: 'Friday',
+    };
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Normalize the time portion
+    const todayDayName = today.toLocaleDateString('en-US', { weekday: 'long' });
+
+    const dayOffset =
+      (Object.keys(dayNameMap).findIndex(
+        (key) => dayNameMap[key] === todayDayName,
+      ) +
+        1) %
+      5;
+    const targetDayOffset =
+      (Object.keys(dayNameMap).findIndex((key) => dayName === key) + 1) % 5;
+
+    // Calculate how many days to add to get from today's weekday to the target weekday
+    let daysToAdd = targetDayOffset - dayOffset;
+    if (daysToAdd < 0) {
+      daysToAdd += 5; // Ensure it's always a future date within the week
+    }
+
+    const date = new Date(today);
+    date.setDate(today.getDate() + daysToAdd);
+    return date;
   }
 
   private async calculateAvailableSlotsForDay(
