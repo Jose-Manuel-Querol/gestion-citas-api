@@ -181,7 +181,7 @@ export class AppointmentService {
     // Mandatory conditions
     queryBuilder
       .where('appointment.cancelled = :cancelled', { cancelled: false })
-      .andWhere('day.dayDate BETWEEN :startingDate AND :endingDate', {
+      .andWhere('appointment.dayDate BETWEEN :startingDate AND :endingDate', {
         startingDate,
         endingDate,
       });

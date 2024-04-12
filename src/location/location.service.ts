@@ -14,7 +14,9 @@ export class LocationService {
   ) {}
 
   async getAll(): Promise<Location[]> {
-    return await this.repo.find();
+    return await this.repo.find({
+      relations: { zone: true },
+    });
   }
 
   async getById(locationId: number): Promise<Location> {
