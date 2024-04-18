@@ -1,4 +1,14 @@
-import { IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  IsArray,
+  IsBoolean,
+  IsNumber,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
+
+import { FranjaDto } from '../../franja/dtos/franja.dto';
 
 export class DayDto {
   @IsOptional()
@@ -10,14 +20,11 @@ export class DayDto {
   dayName: string;
 
   @IsOptional()
-  @IsString()
-  startingHour: string;
-
-  @IsOptional()
-  @IsString()
-  endingHour: string;
-
-  @IsOptional()
   @IsBoolean()
   active: boolean;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => FranjaDto)
+  franjas: FranjaDto[];
 }

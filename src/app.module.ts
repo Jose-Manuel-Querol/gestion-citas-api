@@ -15,6 +15,7 @@ import { LocationModule } from './location/location.module';
 import { ZoneModule } from './zone/zone.module';
 import { AppointmentModule } from './appointment/appointment.module';
 import { AddressModule } from './address/address.module';
+import { FranjaModule } from './franja/franja.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { AddressModule } from './address/address.module';
     ZoneModule,
     AppointmentModule,
     AddressModule,
+    FranjaModule,
   ],
   controllers: [AppController],
   providers: [

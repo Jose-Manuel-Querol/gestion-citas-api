@@ -74,10 +74,7 @@ export class AppointmentTypeAgentService {
           {
             active: createDto.createAppointmentTypeAgents[i].days[e].active,
             dayName: createDto.createAppointmentTypeAgents[i].days[e].dayName,
-            endingHour:
-              createDto.createAppointmentTypeAgents[i].days[e].endingHour,
-            startingHour:
-              createDto.createAppointmentTypeAgents[i].days[e].startingHour,
+            franjas: createDto.createAppointmentTypeAgents[i].days[e].franjas,
           },
           appointmentTypeAgent,
         );
@@ -130,9 +127,7 @@ export class AppointmentTypeAgentService {
             {
               active: updateDto.appointmentTypeAgents[i].days[e].active,
               dayName: updateDto.appointmentTypeAgents[i].days[e].dayName,
-              endingHour: updateDto.appointmentTypeAgents[i].days[e].endingHour,
-              startingHour:
-                updateDto.appointmentTypeAgents[i].days[e].startingHour,
+              franjas: updateDto.appointmentTypeAgents[i].days[e].franjas,
             },
             appointmentTypeAgent,
           );

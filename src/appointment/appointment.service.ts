@@ -240,7 +240,7 @@ export class AppointmentService {
     return appointment;
   }
 
-  async findAvailableAppointments(appointmentTypeId: number) {
+  /*async findAvailableAppointments(appointmentTypeId: number) {
     // Step 1: Filter days and agents
     const targetDays = await this.dayService.filterDaysAndAgents(
       appointmentTypeId,
@@ -276,7 +276,7 @@ export class AppointmentService {
     });
 
     return availability;
-  }
+  }*/
 
   private getDateForDayName(dayName: string, additionalWeeks = 0): Date {
     const today = new Date();
@@ -302,7 +302,7 @@ export class AppointmentService {
     return date; // fallback, shouldn't happen
   }
 
-  private async calculateAvailableSlotsForDay(
+  /*private async calculateAvailableSlotsForDay(
     day: Day,
     appointmentTypeId: number,
   ): Promise<{ day: Day; availableSlots: string[] }> {
@@ -347,7 +347,7 @@ export class AppointmentService {
     );
 
     return { day, availableSlots };
-  }
+  }*/
 
   async create(createDto: CreateAppointmentDto): Promise<Appointment> {
     const day = await this.dayService.getById(createDto.dayId);

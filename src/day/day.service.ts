@@ -4,21 +4,28 @@ import { Day } from './day.entity';
 import { Repository } from 'typeorm';
 import { CreateDayDto } from './dtos/create-day.dto';
 import { AppointmentTypeAgent } from '../appointment-type-agent/appointment-type-agent.entity';
+import { FranjaService } from '../franja/franja.service';
+import { DayDto } from './dtos/day.dto';
 @Injectable()
 export class DayService {
-  constructor(@InjectRepository(Day) private repo: Repository<Day>) {}
+  constructor(
+    @InjectRepository(Day) private repo: Repository<Day>,
+    private franjaService: FranjaService,
+  ) {}
 
   async getAllByAppointmentTypeAgent(
     appointmentTypeAgentId: number,
   ): Promise<Day[]> {
     return await this.repo.find({
       where: { appointmentTypeAgent: { appointmentTypeAgentId } },
+      relations: { appointmentTypeAgent: true, franjas: true },
     });
   }
 
   async getById(dayId: number): Promise<Day> {
     const day = await this.repo.findOne({
       where: { dayId },
+      relations: { appointmentTypeAgent: true, franjas: true },
     });
 
     if (!day) {
@@ -83,17 +90,60 @@ export class DayService {
       appointmentTypeAgent,
       active: createDto.active,
       dayName: createDto.dayName,
-      endingHour: createDto.endingHour,
-      startingHour: createDto.startingHour,
     });
 
-    return await this.repo.save(day);
+    const savedDay = await this.repo.save(day);
+    for (let i = 0; i < createDto.franjas.length; i++) {
+      await this.franjaService.create(createDto.franjas[i], savedDay);
+    }
+
+    return await this.getById(savedDay.dayId);
   }
 
-  async update(dayId: number, attrs: Partial<Day>): Promise<Day> {
+  async update(dayId: number, updateDto: DayDto): Promise<Day> {
     const day = await this.getById(dayId);
-    Object.assign(day, attrs);
-    return await this.repo.save(day);
+    if (updateDto.active) {
+      day.active = updateDto.active;
+    }
+
+    if (updateDto.dayName) {
+      day.dayName = updateDto.dayName;
+    }
+
+    const updatedDay = await this.repo.save(day);
+
+    if (updateDto.franjas.length > 0) {
+      const franjas = updatedDay.franjas;
+      const currentFranjaIds = franjas.map((franja) => franja.franjaId);
+      const newFranjaIds = updateDto.franjas.map((franja) => franja.franjaId);
+      const franjaIdsToDelete = currentFranjaIds.filter(
+        (franjaId) => !newFranjaIds.includes(franjaId),
+      );
+
+      if (franjaIdsToDelete.length > 0) {
+        for (let f = 0; f < franjaIdsToDelete.length; f++) {
+          await this.franjaService.delete(franjaIdsToDelete[f]);
+        }
+      }
+
+      for (let e = 0; e < updateDto.franjas.length; e++) {
+        if (updateDto.franjas[e].franjaId) {
+          await this.franjaService.update(
+            updateDto.franjas[e].franjaId,
+            updateDto.franjas[e],
+          );
+        } else {
+          await this.franjaService.create(
+            {
+              endingHour: updateDto.franjas[e].endingHour,
+              startingHour: updateDto.franjas[e].startingHour,
+            },
+            updatedDay,
+          );
+        }
+      }
+    }
+    return await this.getById(updatedDay.dayId);
   }
 
   async delete(dayId: number): Promise<Day> {

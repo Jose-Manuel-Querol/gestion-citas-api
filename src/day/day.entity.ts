@@ -9,6 +9,7 @@ import {
 
 import { AppointmentTypeAgent } from '../appointment-type-agent/appointment-type-agent.entity';
 import { Appointment } from '../appointment/appointment.entity';
+import { Franja } from '../franja/franja.entity';
 
 @Entity()
 export class Day {
@@ -17,12 +18,6 @@ export class Day {
 
   @Column()
   dayName: string;
-
-  @Column()
-  startingHour: string;
-
-  @Column()
-  endingHour: string;
 
   @Column({ default: false })
   active: boolean;
@@ -44,4 +39,10 @@ export class Day {
     onDelete: 'SET NULL',
   })
   appointments: Appointment[];
+
+  @OneToMany(() => Franja, (franja) => franja.day, {
+    cascade: true,
+    onDelete: 'SET NULL',
+  })
+  franjas: Franja[];
 }
