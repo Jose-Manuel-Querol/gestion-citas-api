@@ -20,7 +20,10 @@ export class AgentService {
     return await this.repo.find({
       relations: {
         zone: true,
-        appointmentTypeAgents: { appointmentType: true, days: true },
+        appointmentTypeAgents: {
+          appointmentType: true,
+          days: { franjas: true },
+        },
       },
     });
   }
@@ -30,7 +33,10 @@ export class AgentService {
       where: { slug },
       relations: {
         zone: true,
-        appointmentTypeAgents: { appointmentType: true, days: true },
+        appointmentTypeAgents: {
+          appointmentType: true,
+          days: { franjas: true },
+        },
       },
     });
   }
@@ -40,7 +46,10 @@ export class AgentService {
       where: { agentId },
       relations: {
         zone: true,
-        appointmentTypeAgents: { appointmentType: true, days: true },
+        appointmentTypeAgents: {
+          appointmentType: true,
+          days: { franjas: true },
+        },
       },
     });
     if (!agent) {
@@ -55,7 +64,10 @@ export class AgentService {
       where: { email },
       relations: {
         zone: true,
-        appointmentTypeAgents: { appointmentType: true, days: true },
+        appointmentTypeAgents: {
+          appointmentType: true,
+          days: { franjas: true },
+        },
       },
     });
     if (!agent) {
@@ -72,7 +84,10 @@ export class AgentService {
       where: { slug },
       relations: {
         zone: true,
-        appointmentTypeAgents: { appointmentType: true, days: true },
+        appointmentTypeAgents: {
+          appointmentType: true,
+          days: { franjas: true },
+        },
       },
     });
     if (!agent) {

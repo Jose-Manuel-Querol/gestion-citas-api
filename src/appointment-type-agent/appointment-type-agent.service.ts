@@ -95,7 +95,10 @@ export class AppointmentTypeAgentService {
           appointmentTypeAgent,
         );
       }
-      appointmentTypeAgents.push(appointmentTypeAgent);
+      const createdAppointment = await this.getById(
+        appointmentTypeAgent.appointmentTypeAgentId,
+      );
+      appointmentTypeAgents.push(createdAppointment);
     }
 
     return appointmentTypeAgents;
@@ -149,7 +152,10 @@ export class AppointmentTypeAgentService {
           );
         }
       }
-      appointmentTypeAgents.push(appointmentTypeAgent);
+      const updatedAppointment = await this.getById(
+        appointmentTypeAgent.appointmentTypeAgentId,
+      );
+      appointmentTypeAgents.push(updatedAppointment);
     }
     return appointmentTypeAgents;
   }
