@@ -18,6 +18,10 @@ export class CreateAppointmentDto {
   startingHour: string;
 
   @IsNotEmpty()
+  @IsString()
+  endingHour: string;
+
+  @IsNotEmpty()
   @IsISO8601()
   dayDate: string;
 

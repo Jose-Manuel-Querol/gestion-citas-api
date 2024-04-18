@@ -30,6 +30,9 @@ export class Appointment {
   @Column()
   startingHour: string;
 
+  @Column({ nullable: true })
+  endingHour: string;
+
   @Column({ default: false })
   cancelled: boolean;
 

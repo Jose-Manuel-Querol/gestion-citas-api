@@ -22,7 +22,7 @@ import { GetAllAppointmentsByAppointmentType } from './dtos/get-all-appointments
 export class AppointmentController {
   constructor(private appointmentService: AppointmentService) {}
 
-  /*@Get('available-dates')
+  @Get('available-dates')
   async getAllAvailableAppointments(
     @Query('appointmentTypeId') appointmentTypeId: string,
     //@Query('zoneId') zoneId: string,
@@ -31,7 +31,7 @@ export class AppointmentController {
       parseInt(appointmentTypeId),
       //parseInt(zoneId),
     );
-  }*/
+  }
 
   @Get('between-dates')
   async getAllWithinDates(

@@ -1,7 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Appointment } from './appointment.entity';
-import { Between, In, Repository } from 'typeorm';
+import {
+  Between,
+  In,
+  LessThanOrEqual,
+  MoreThanOrEqual,
+  Repository,
+} from 'typeorm';
 import { DayService } from '../day/day.service';
 import { AppointmentTypeAgentService } from '../appointment-type-agent/appointment-type-agent.service';
 import { LocationService } from '../location/location.service';
@@ -240,7 +246,7 @@ export class AppointmentService {
     return appointment;
   }
 
-  /*async findAvailableAppointments(appointmentTypeId: number) {
+  async findAvailableAppointments(appointmentTypeId: number) {
     // Step 1: Filter days and agents
     const targetDays = await this.dayService.filterDaysAndAgents(
       appointmentTypeId,
@@ -276,7 +282,7 @@ export class AppointmentService {
     });
 
     return availability;
-  }*/
+  }
 
   private getDateForDayName(dayName: string, additionalWeeks = 0): Date {
     const today = new Date();
@@ -302,7 +308,7 @@ export class AppointmentService {
     return date; // fallback, shouldn't happen
   }
 
-  /*private async calculateAvailableSlotsForDay(
+  private async calculateAvailableSlotsForDay(
     day: Day,
     appointmentTypeId: number,
   ): Promise<{ day: Day; availableSlots: string[] }> {
@@ -310,44 +316,49 @@ export class AppointmentService {
     const appointmentType = await this.appointmentTypeService.getById(
       appointmentTypeId,
     );
-
     if (!appointmentType) throw new Error('Appointment type not found.');
 
     const duration = parseInt(appointmentType.duration); // Convert duration to an integer, assuming it's stored in minutes
+    let allSlots = [];
 
-    // Generate slots for the day based on startingHour and endingHour from the Day entity
-    const slots = [];
-    let currentTimeSlotStart = moment(day.startingHour, 'HH:mm');
-    const endTime = moment(day.endingHour, 'HH:mm');
+    // Process each Franja to generate slots
+    for (const franja of day.franjas) {
+      const slots = [];
+      let currentTimeSlotStart = moment(franja.startingHour, 'HH:mm');
+      const endTime = moment(franja.endingHour, 'HH:mm');
 
-    while (currentTimeSlotStart.add(duration, 'minutes').isBefore(endTime)) {
-      const slotEnd = moment(currentTimeSlotStart).add(duration, 'minutes');
-      slots.push(
-        `${currentTimeSlotStart.format('HH:mm')} to ${slotEnd.format('HH:mm')}`,
+      while (currentTimeSlotStart.add(duration, 'minutes').isBefore(endTime)) {
+        const slotEnd = moment(currentTimeSlotStart).add(duration, 'minutes');
+        slots.push(
+          `${currentTimeSlotStart.format('HH:mm')} to ${slotEnd.format(
+            'HH:mm',
+          )}`,
+        );
+        currentTimeSlotStart = slotEnd;
+      }
+
+      // Fetch appointments for the day and this specific franja to check which slots are already booked
+      const appointments = await this.repo.find({
+        where: {
+          day: { dayId: day.dayId },
+          startingHour: MoreThanOrEqual(franja.startingHour),
+          endingHour: LessThanOrEqual(franja.endingHour),
+          appointmentTypeAgent: { appointmentType: { appointmentTypeId } },
+          cancelled: false,
+        },
+      });
+
+      // Map appointments to their starting hours for comparison
+      const bookedTimes = appointments.map((a) => a.startingHour);
+      // Filter out slots that have been booked
+      const availableSlots = slots.filter(
+        (slot) => !bookedTimes.includes(slot.split(' to ')[0]),
       );
-      currentTimeSlotStart = slotEnd;
+      allSlots = allSlots.concat(availableSlots);
     }
 
-    // Fetch appointments for the day to check which slots are already booked
-    const appointments = await this.repo.find({
-      where: {
-        day: { dayId: day.dayId },
-        appointmentTypeAgent: {
-          appointmentType: { appointmentTypeId },
-        },
-        cancelled: false,
-      },
-    });
-
-    // Map appointments to their starting hours for comparison
-    const bookedTimes = appointments.map((a) => a.startingHour);
-    // Filter out slots that have been booked
-    const availableSlots = slots.filter(
-      (slot) => !bookedTimes.includes(slot.split(' to ')[0]),
-    );
-
-    return { day, availableSlots };
-  }*/
+    return { day, availableSlots: allSlots };
+  }
 
   async create(createDto: CreateAppointmentDto): Promise<Appointment> {
     const day = await this.dayService.getById(createDto.dayId);
@@ -366,6 +377,7 @@ export class AppointmentService {
       location,
       startingHour: createDto.startingHour,
       code,
+      endingHour: createDto.endingHour,
     });
 
     return await this.repo.save(appointment);
@@ -400,6 +412,7 @@ export class AppointmentService {
     appointment.clientPhoneNumber = updateDto.clientPhoneNumber;
     appointment.dayDate = updateDto.dayDate;
     appointment.startingHour = updateDto.startingHour;
+    appointment.endingHour = updateDto.endingHour;
     const code = generateFiveDigitNumber().toString();
     appointment.code = code;
     return await this.repo.save(appointment);
