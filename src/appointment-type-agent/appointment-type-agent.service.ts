@@ -18,7 +18,11 @@ export class AppointmentTypeAgentService {
 
   async getAll(): Promise<AppointmentTypeAgent[]> {
     return this.repo.find({
-      relations: { agent: true, appointmentType: true, days: true },
+      relations: {
+        agent: true,
+        appointmentType: true,
+        days: { franjas: true },
+      },
     });
   }
 
@@ -26,14 +30,22 @@ export class AppointmentTypeAgentService {
     appointmentTypeId: number,
   ): Promise<AppointmentTypeAgent[]> {
     return this.repo.find({
-      relations: { agent: true, appointmentType: true, days: true },
+      relations: {
+        agent: true,
+        appointmentType: true,
+        days: { franjas: true },
+      },
       where: { appointmentType: { appointmentTypeId } },
     });
   }
 
   async getAllByAgent(agentId: number): Promise<AppointmentTypeAgent[]> {
     return this.repo.find({
-      relations: { agent: true, appointmentType: true, days: true },
+      relations: {
+        agent: true,
+        appointmentType: true,
+        days: { franjas: true },
+      },
       where: { agent: { agentId } },
     });
   }
@@ -41,7 +53,11 @@ export class AppointmentTypeAgentService {
   async getById(appointmentTypeAgentId: number): Promise<AppointmentTypeAgent> {
     const appointmentTypeAgent = await this.repo.findOne({
       where: { appointmentTypeAgentId },
-      relations: { agent: true, appointmentType: true, days: true },
+      relations: {
+        agent: true,
+        appointmentType: true,
+        days: { franjas: true },
+      },
     });
 
     if (!appointmentTypeAgent) {
