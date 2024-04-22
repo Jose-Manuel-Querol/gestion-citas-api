@@ -46,10 +46,10 @@ export class Agent {
   @Column({ nullable: true })
   fullAddress: string;
 
-  @Column()
+  @Column({ nullable: true, type: 'datetime' })
   vacationStart: string;
 
-  @Column()
+  @Column({ nullable: true, type: 'datetime' })
   vacationEnd: string;
 
   @Column({ default: false })

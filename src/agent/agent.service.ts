@@ -1,7 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Agent } from './agent.entity';
-import { Repository } from 'typeorm';
+import { LessThan, MoreThanOrEqual, Repository } from 'typeorm';
 import { ZoneService } from '../zone/zone.service';
 import { CreateAgentDto } from './dtos/create-agent.dto';
 import { UpdateAgentDto } from './dtos/update-agent.dto';
@@ -80,6 +84,21 @@ export class AgentService {
     return agent;
   }
 
+  async getAllByEmail(email: string): Promise<Agent[]> {
+    const agents = await this.repo.find({
+      where: { email },
+      relations: {
+        zone: true,
+        appointmentTypeAgents: {
+          appointmentType: true,
+          days: { franjas: true },
+        },
+      },
+    });
+
+    return agents;
+  }
+
   async getBySlug(slug: string): Promise<Agent> {
     const agent = await this.repo.findOne({
       where: { slug },
@@ -100,12 +119,18 @@ export class AgentService {
 
   async create(createDto: CreateAgentDto): Promise<Agent> {
     const zone = await this.zoneService.getById(createDto.zoneId);
+    const foundAgents = await this.getAllByEmail(createDto.email);
+    if (foundAgents.length > 0) {
+      throw new BadRequestException(
+        'Ya existe otro agente con el mismo correo electrónico',
+      );
+    }
     const agent = this.repo.create({
       fullAddress: createDto.address + ' ' + createDto.addressNro,
       address: createDto.address,
       addressNro: createDto.addressNro,
       city: createDto.city,
-      email: createDto.city,
+      email: createDto.email,
       firstName: createDto.firstName,
       lastName: createDto.lastName,
       phoneNumber: createDto.phoneNumber,
@@ -200,37 +225,65 @@ export class AgentService {
   }
 
   async deactivateAgents() {
-    const today = new Date().toISOString().slice(0, 10);
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0); // Set to the start of today
+
+    const tomorrowStart = new Date(todayStart);
+    tomorrowStart.setDate(todayStart.getDate() + 1); // Set to the start of tomorrow
+
     await this.repo.update(
-      { activationStart: today, active: true },
+      {
+        activationStart: MoreThanOrEqual(todayStart.toISOString()),
+        active: true,
+      },
       { active: false },
     );
   }
 
   async reactivateAgents() {
-    const today = new Date().toISOString().slice(0, 10);
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0); // Set to the start of today
+
+    const tomorrowStart = new Date(todayStart);
+    tomorrowStart.setDate(todayStart.getDate() + 1); // Set to the start of tomorrow
+
     await this.repo.update(
-      { activationEnd: today, active: false },
+      {
+        activationEnd: LessThan(tomorrowStart.toISOString()),
+        active: false,
+      },
       { active: true },
     );
   }
 
   async startVacation() {
-    const now = new Date();
-    const isoString = now.toISOString();
-    const monthAndDay = isoString.slice(5, 10);
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0); // Set to the start of today
+
+    const tomorrowStart = new Date(todayStart);
+    tomorrowStart.setDate(todayStart.getDate() + 1); // Set to the start of tomorrow
+
     await this.repo.update(
-      { vacationStart: monthAndDay, vacation: true },
+      {
+        vacationStart: MoreThanOrEqual(todayStart.toISOString()),
+        vacation: true,
+      },
       { vacation: false },
     );
   }
 
   async endVacation() {
-    const now = new Date();
-    const isoString = now.toISOString();
-    const monthAndDay = isoString.slice(5, 10);
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0); // Set to the start of today
+
+    const tomorrowStart = new Date(todayStart);
+    tomorrowStart.setDate(todayStart.getDate() + 1); // Set to the start of tomorrow
+
     await this.repo.update(
-      { vacationEnd: monthAndDay, vacation: false },
+      {
+        vacationEnd: LessThan(tomorrowStart.toISOString()),
+        vacation: false,
+      },
       { vacation: true },
     );
   }
