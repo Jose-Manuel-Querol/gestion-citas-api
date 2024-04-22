@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Agent } from './agent.entity';
 import { ZoneModule } from '../zone/zone.module';
 import { AppointmentTypeAgentModule } from '../appointment-type-agent/appointment-type-agent.module';
+import { AgentSchedulerService } from './agent.scheduler.service';
 
 @Module({
   imports: [
@@ -13,7 +14,7 @@ import { AppointmentTypeAgentModule } from '../appointment-type-agent/appointmen
     AppointmentTypeAgentModule,
   ],
   controllers: [AgentController],
-  providers: [AgentService],
+  providers: [AgentService, AgentSchedulerService],
   exports: [AgentService],
 })
 export class AgentModule {}

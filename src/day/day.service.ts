@@ -65,7 +65,13 @@ export class DayService {
       .where('appointmentType.appointmentTypeId = :appointmentTypeId', {
         appointmentTypeId,
       })
-      .andWhere('day.dayName IN (:...dayNames)', { dayNames });
+      .andWhere('day.dayName IN (:...dayNames)', { dayNames })
+      .andWhere('agent.vacation = :vacation', {
+        vacation: false,
+      })
+      .andWhere('agent.active = :active', {
+        active: true,
+      });
 
     const days = await query.getMany();
     return days;

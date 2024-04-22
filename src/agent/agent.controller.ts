@@ -15,6 +15,7 @@ import { UpdateAgentDto } from './dtos/update-agent.dto';
 import { JwtAccountGuard } from '../account/account-auth/account-guards/account.jwt.guard';
 import { RolesGuard } from '../account/account-auth/account-guards/roles.guard';
 import { Roles } from '../shared/roles.decorator';
+import { ScheduleActivationAgentDto } from './dtos/scheadule-activation-agent.dto';
 
 @Controller('agent')
 export class AgentController {
@@ -56,6 +57,16 @@ export class AgentController {
     @Body() body: UpdateAgentDto,
   ): Promise<Agent> {
     return await this.agentService.update(parseInt(agentId), body);
+  }
+
+  @UseGuards(JwtAccountGuard, RolesGuard)
+  @Roles('Admin')
+  @Put('/deactivate/:id')
+  async deactivateAgent(
+    @Param('id') agentId: string,
+    @Body() body: ScheduleActivationAgentDto,
+  ): Promise<Agent> {
+    return await this.agentService.deactivateAgent(parseInt(agentId), body);
   }
 
   @UseGuards(JwtAccountGuard, RolesGuard)

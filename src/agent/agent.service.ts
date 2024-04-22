@@ -7,6 +7,7 @@ import { CreateAgentDto } from './dtos/create-agent.dto';
 import { UpdateAgentDto } from './dtos/update-agent.dto';
 import { generateSlug } from '../shared/shared-functions';
 import { AppointmentTypeAgentService } from '../appointment-type-agent/appointment-type-agent.service';
+import { ScheduleActivationAgentDto } from './dtos/scheadule-activation-agent.dto';
 
 @Injectable()
 export class AgentService {
@@ -131,6 +132,17 @@ export class AgentService {
     return await this.getById(createdAgent.agentId);
   }
 
+  async deactivateAgent(
+    agentId: number,
+    updateDto: ScheduleActivationAgentDto,
+  ): Promise<Agent> {
+    const agent = await this.getById(agentId);
+    agent.activationStart = updateDto.activationStart;
+    agent.activationEnd = updateDto.activationEnd;
+    await this.repo.save(agent);
+    return await this.getById(agentId);
+  }
+
   async update(agentId: number, updateDto: UpdateAgentDto): Promise<Agent> {
     const agent = await this.getById(agentId);
     if (updateDto.address) {
@@ -185,6 +197,42 @@ export class AgentService {
       updateDto.appointmentTypeAgents,
     );
     return await this.getById(agentId);
+  }
+
+  async deactivateAgents() {
+    const today = new Date().toISOString().slice(0, 10);
+    await this.repo.update(
+      { activationStart: today, active: true },
+      { active: false },
+    );
+  }
+
+  async reactivateAgents() {
+    const today = new Date().toISOString().slice(0, 10);
+    await this.repo.update(
+      { activationEnd: today, active: false },
+      { active: true },
+    );
+  }
+
+  async startVacation() {
+    const now = new Date();
+    const isoString = now.toISOString();
+    const monthAndDay = isoString.slice(5, 10);
+    await this.repo.update(
+      { vacationStart: monthAndDay, vacation: true },
+      { vacation: false },
+    );
+  }
+
+  async endVacation() {
+    const now = new Date();
+    const isoString = now.toISOString();
+    const monthAndDay = isoString.slice(5, 10);
+    await this.repo.update(
+      { vacationEnd: monthAndDay, vacation: false },
+      { vacation: true },
+    );
   }
 
   async delete(agentId: number): Promise<Agent> {

@@ -52,6 +52,18 @@ export class Agent {
   @Column()
   vacationEnd: string;
 
+  @Column({ default: false })
+  vacation: boolean;
+
+  @Column({ default: true })
+  active: boolean;
+
+  @Column({ nullable: true, type: 'datetime' })
+  activationStart: string;
+
+  @Column({ nullable: true, type: 'datetime' })
+  activationEnd: string;
+
   @CreateDateColumn()
   createdAt: Date;
 
