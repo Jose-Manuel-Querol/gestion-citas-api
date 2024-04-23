@@ -6,6 +6,7 @@ import {
   Post,
   Put,
   Query,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import { AppointmentService } from './appointment.service';
@@ -17,6 +18,7 @@ import { RolesGuard } from '../account/account-auth/account-guards/roles.guard';
 import { Roles } from '../shared/roles.decorator';
 import { GetAllAppointmentsByAgents } from './dtos/get-all-appointments-by-agents.dto';
 import { GetAllAppointmentsByAppointmentType } from './dtos/get-all-appointments-by-appointment-type.dto';
+import { Response } from 'express';
 
 @Controller('appointment')
 export class AppointmentController {
@@ -50,6 +52,33 @@ export class AppointmentController {
       firstName,
       code,
     );
+  }
+
+  @Get('generate-report')
+  async generateAppointmentsReport(
+    @Query('startingDate') startingDate: string,
+    @Query('endingDate') endingDate: string,
+    @Res() res: Response,
+    @Query('typeName') typeName?: string,
+    @Query('clientName') clientName?: string,
+    @Query('firstName') firstName?: string,
+    @Query('code') code?: string,
+  ) {
+    const appointments = await this.appointmentService.getAllWithinDates(
+      startingDate,
+      endingDate,
+      typeName,
+      clientName,
+      firstName,
+      code,
+    );
+    const buffer = await this.appointmentService.createPdf(appointments);
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="appointments-report-${startingDate}-to-${endingDate}.pdf"`,
+    );
+    res.end(buffer);
   }
 
   @UseGuards(JwtAccountGuard, RolesGuard)

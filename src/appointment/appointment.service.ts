@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Appointment } from './appointment.entity';
@@ -14,12 +15,15 @@ import { LocationService } from '../location/location.service';
 import { CreateAppointmentDto } from './dtos/create-appointment.dto';
 import { CancelManyAppointments } from './dtos/cancel-many-appointments.dto';
 import {
+  convertIsoToDate,
   generateFiveDigitNumber,
   getDayAfterTomorrow,
 } from '../shared/shared-functions';
 import { Day } from '../day/day.entity';
 import * as moment from 'moment';
 import { AppointmentTypeService } from '../appointment-type/appointment-type.service';
+//import * as PDFDocument from 'pdfkit';
+import PDFDocument from 'pdfkit-table';
 
 @Injectable()
 export class AppointmentService {
@@ -416,6 +420,87 @@ export class AppointmentService {
     const code = generateFiveDigitNumber().toString();
     appointment.code = code;
     return await this.repo.save(appointment);
+  }
+
+  /*async createPdf(appointments: Appointment[]): Promise<Buffer> {
+    const doc = new PDFDocument();
+    const buffers: Buffer[] = [];
+    doc.on('data', buffers.push.bind(buffers));
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    doc.on('end', () => {});
+
+    // PDF Layout/Design here
+    doc.fontSize(16).text('Reporte de Citas', { align: 'center' });
+    doc.moveDown(2);
+
+    appointments.forEach((appointment) => {
+      doc.fontSize(12).text(`Número de cita: ${appointment.appointmentId}`, {
+        continued: true,
+      });
+      doc.text(` - Código: ${appointment.code}`);
+      doc.text(
+        `Cliente: ${appointment.clientName}, Número de celular del cliente: ${appointment.clientPhoneNumber}`,
+      );
+      doc.text(
+        `Día de la cita: ${convertIsoToDate(appointment.dayDate)} desde ${
+          appointment.startingHour
+        } hasta ${appointment.endingHour}`,
+      );
+      doc.text(`Centro de atencion: ${appointment.location.locationName}`);
+      doc.text(
+        `Agente: ${appointment.appointmentTypeAgent.agent.firstName} ${appointment.appointmentTypeAgent.agent.lastName}`,
+      );
+      doc.text(`Estado: ${appointment.cancelled ? 'Cancelada' : 'Activa'}`);
+      doc.moveDown();
+    });
+
+    doc.end();
+    return new Promise((resolve) =>
+      doc.on('end', () => resolve(Buffer.concat(buffers))),
+    );
+  }*/
+
+  async createPdf(appointments: Appointment[]): Promise<Buffer> {
+    const doc = new PDFDocument({ margin: 30, size: 'A4' });
+    const buffers: Buffer[] = [];
+    doc.on('data', buffers.push.bind(buffers));
+    doc.on('end', () => {});
+    doc.fontSize(16).text('Reporte de Citas', { align: 'center' });
+    doc.moveDown(2);
+
+    // Define the table options directly with pdfkit-table enhancement
+    const tableArray = {
+      headers: [
+        { label: 'Fecha', property: 'date', width: 70 },
+        { label: 'Hora', property: 'hour', width: 70 },
+        { label: 'Agente', property: 'agent', width: 70 },
+        { label: 'Tipo de Cita', property: 'appointmentType', width: 70 },
+        { label: 'Nombre del Cliente', property: 'client', width: 70 },
+        { label: 'Celular', property: 'phone', width: 70 },
+        { label: 'Código', property: 'code', width: 70 },
+        { label: 'Centro de Atención', property: 'location', width: 70 },
+      ],
+      datas: appointments.map((appointment) => ({
+        date: convertIsoToDate(appointment.dayDate),
+        hour: `${appointment.startingHour} - ${appointment.endingHour}`,
+        agent: `${appointment.appointmentTypeAgent.agent.firstName} ${appointment.appointmentTypeAgent.agent.lastName}`,
+        appointmentType:
+          appointment.appointmentTypeAgent.appointmentType.typeName,
+        client: appointment.clientName,
+        phone: appointment.clientPhoneNumber,
+        code: appointment.code,
+        location: appointment.location.locationName,
+      })),
+    };
+
+    await doc.table(tableArray, {
+      prepareHeader: () => doc.font('Helvetica-Bold').fontSize(8),
+    });
+
+    doc.end();
+    return new Promise((resolve) => {
+      doc.on('end', () => resolve(Buffer.concat(buffers)));
+    });
   }
 
   async cancel(cancelDto: CancelManyAppointments): Promise<Appointment[]> {
