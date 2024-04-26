@@ -25,6 +25,7 @@ import { WhatsappService } from './shared/whatsapp.service';
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: `.env.${process.env.NODE_ENV}`,
+      ignoreEnvFile: process.env.NODE_ENV === 'production',
       /*envFilePath:
         process.env.NODE_ENV === 'development'
           ? `.env.${process.env.NODE_ENV}`
