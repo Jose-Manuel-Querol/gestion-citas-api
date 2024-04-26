@@ -217,9 +217,10 @@ export class AgentService {
       agent.zone = zone;
     }
 
-    await this.repo.save(agent);
+    const updatedAgent = await this.repo.save(agent);
     await this.appointmentTypeAgentService.updateMany(
       updateDto.appointmentTypeAgents,
+      updatedAgent,
     );
     return await this.getById(agentId);
   }

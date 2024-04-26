@@ -106,42 +106,77 @@ export class AppointmentTypeAgentService {
 
   async updateMany(
     updateDto: UpdateManyAppointmentTypeAgent,
+    agent: Agent,
   ): Promise<AppointmentTypeAgent[]> {
     const appointmentTypeAgents: AppointmentTypeAgent[] = [];
     for (let i = 0; i < updateDto.appointmentTypeAgents.length; i++) {
-      const appointmentTypeAgent = await this.getById(
-        updateDto.appointmentTypeAgents[i].appointmentTypeAgentId,
-      );
       const appointmentType = await this.appointmentTypeService.getById(
         updateDto.appointmentTypeAgents[i].appointmentTypeId,
       );
-      const days = appointmentTypeAgent.days;
-      const currentDayIds = days.map((day) => day.dayId);
-      const newDayIds = updateDto.appointmentTypeAgents[i].days.map(
-        (day) => day.dayId,
-      );
-      const dayIdsToDelete = currentDayIds.filter(
-        (dayId) => !newDayIds.includes(dayId),
-      );
-      if (dayIdsToDelete.length > 0) {
-        for (let f = 0; f < dayIdsToDelete.length; f++) {
-          await this.dayService.delete(dayIdsToDelete[f]);
+      if (updateDto.appointmentTypeAgents[i].appointmentTypeAgentId) {
+        const appointmentTypeAgent = await this.getById(
+          updateDto.appointmentTypeAgents[i].appointmentTypeAgentId,
+        );
+        const days = appointmentTypeAgent.days;
+        const currentDayIds = days.map((day) => day.dayId);
+        const newDayIds = updateDto.appointmentTypeAgents[i].days.map(
+          (day) => day.dayId,
+        );
+        const dayIdsToDelete = currentDayIds.filter(
+          (dayId) => !newDayIds.includes(dayId),
+        );
+        if (dayIdsToDelete.length > 0) {
+          for (let f = 0; f < dayIdsToDelete.length; f++) {
+            await this.dayService.delete(dayIdsToDelete[f]);
+          }
         }
-      }
-      if (
-        appointmentTypeAgent.appointmentType.appointmentTypeId !==
-        appointmentType.appointmentTypeId
-      ) {
-        appointmentTypeAgent.appointmentType = appointmentType;
-        await this.repo.save(appointmentTypeAgent);
-      }
-      for (let e = 0; e < updateDto.appointmentTypeAgents[i].days.length; e++) {
-        if (updateDto.appointmentTypeAgents[i].days[e].dayId) {
-          await this.dayService.update(
-            updateDto.appointmentTypeAgents[i].days[e].dayId,
-            updateDto.appointmentTypeAgents[i].days[e],
-          );
-        } else {
+
+        if (
+          appointmentTypeAgent.appointmentType.appointmentTypeId !==
+          appointmentType.appointmentTypeId
+        ) {
+          appointmentTypeAgent.appointmentType = appointmentType;
+          await this.repo.save(appointmentTypeAgent);
+        }
+
+        for (
+          let e = 0;
+          e < updateDto.appointmentTypeAgents[i].days.length;
+          e++
+        ) {
+          if (updateDto.appointmentTypeAgents[i].days[e].dayId) {
+            await this.dayService.update(
+              updateDto.appointmentTypeAgents[i].days[e].dayId,
+              updateDto.appointmentTypeAgents[i].days[e],
+            );
+          } else {
+            await this.dayService.create(
+              {
+                active: updateDto.appointmentTypeAgents[i].days[e].active,
+                dayName: updateDto.appointmentTypeAgents[i].days[e].dayName,
+                franjas: updateDto.appointmentTypeAgents[i].days[e].franjas,
+              },
+              appointmentTypeAgent,
+            );
+          }
+        }
+        const updatedAppointment = await this.getById(
+          appointmentTypeAgent.appointmentTypeAgentId,
+        );
+        appointmentTypeAgents.push(updatedAppointment);
+      } else {
+        const createAppointmentTypeAgent = this.repo.create({
+          agent,
+          appointmentType,
+        });
+        const appointmentTypeAgent = await this.repo.save(
+          createAppointmentTypeAgent,
+        );
+        for (
+          let e = 0;
+          e < updateDto.appointmentTypeAgents[i].days.length;
+          e++
+        ) {
           await this.dayService.create(
             {
               active: updateDto.appointmentTypeAgents[i].days[e].active,
@@ -151,11 +186,11 @@ export class AppointmentTypeAgentService {
             appointmentTypeAgent,
           );
         }
+        const updatedAppointment = await this.getById(
+          appointmentTypeAgent.appointmentTypeAgentId,
+        );
+        appointmentTypeAgents.push(updatedAppointment);
       }
-      const updatedAppointment = await this.getById(
-        appointmentTypeAgent.appointmentTypeAgentId,
-      );
-      appointmentTypeAgents.push(updatedAppointment);
     }
     return appointmentTypeAgents;
   }
