@@ -24,10 +24,11 @@ import { WhatsappService } from './shared/whatsapp.service';
     ScheduleModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath:
+      envFilePath: '.env',
+      /*envFilePath:
         process.env.NODE_ENV === 'development'
           ? `.env.${process.env.NODE_ENV}`
-          : '.env',
+          : '.env',*/
     }),
     TypeOrmModule.forRootAsync({
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
