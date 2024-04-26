@@ -24,6 +24,7 @@ import * as moment from 'moment';
 import { AppointmentTypeService } from '../appointment-type/appointment-type.service';
 //import * as PDFDocument from 'pdfkit';
 import PDFDocument from 'pdfkit-table';
+import { WhatsappService } from '../shared/whatsapp.service';
 
 @Injectable()
 export class AppointmentService {
@@ -33,6 +34,7 @@ export class AppointmentService {
     private appointmentTypeAgentService: AppointmentTypeAgentService,
     private appointmentTypeService: AppointmentTypeService,
     private locationService: LocationService,
+    private whatsappService: WhatsappService,
   ) {}
 
   async getAll(): Promise<Appointment[]> {
@@ -384,7 +386,23 @@ export class AppointmentService {
       endingHour: createDto.endingHour,
     });
 
-    return await this.repo.save(appointment);
+    const createdAppointment = await this.repo.save(appointment);
+    await this.whatsappService.sendMessage({
+      codigoBot: 'd325d6747956f6a6f56587232b81712e',
+      codigoPlantilla: 'recordatorio_citas',
+      codigoPostalTel: '+34',
+      numeroReceptor: `34${createdAppointment.clientPhoneNumber}`,
+      nombreReceptor: createdAppointment.clientName,
+      fBotEncendido: true,
+      fMostrarMensajeEnChat: true,
+      parametros: {
+        1: `${createdAppointment.day.dayName}`,
+        2: createdAppointment.startingHour,
+        3: createdAppointment.location.locationName,
+        4: createdAppointment.location.fullAddress,
+      },
+    });
+    return createdAppointment;
   }
 
   async update(
@@ -421,44 +439,6 @@ export class AppointmentService {
     appointment.code = code;
     return await this.repo.save(appointment);
   }
-
-  /*async createPdf(appointments: Appointment[]): Promise<Buffer> {
-    const doc = new PDFDocument();
-    const buffers: Buffer[] = [];
-    doc.on('data', buffers.push.bind(buffers));
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    doc.on('end', () => {});
-
-    // PDF Layout/Design here
-    doc.fontSize(16).text('Reporte de Citas', { align: 'center' });
-    doc.moveDown(2);
-
-    appointments.forEach((appointment) => {
-      doc.fontSize(12).text(`Número de cita: ${appointment.appointmentId}`, {
-        continued: true,
-      });
-      doc.text(` - Código: ${appointment.code}`);
-      doc.text(
-        `Cliente: ${appointment.clientName}, Número de celular del cliente: ${appointment.clientPhoneNumber}`,
-      );
-      doc.text(
-        `Día de la cita: ${convertIsoToDate(appointment.dayDate)} desde ${
-          appointment.startingHour
-        } hasta ${appointment.endingHour}`,
-      );
-      doc.text(`Centro de atencion: ${appointment.location.locationName}`);
-      doc.text(
-        `Agente: ${appointment.appointmentTypeAgent.agent.firstName} ${appointment.appointmentTypeAgent.agent.lastName}`,
-      );
-      doc.text(`Estado: ${appointment.cancelled ? 'Cancelada' : 'Activa'}`);
-      doc.moveDown();
-    });
-
-    doc.end();
-    return new Promise((resolve) =>
-      doc.on('end', () => resolve(Buffer.concat(buffers))),
-    );
-  }*/
 
   async createPdf(appointments: Appointment[]): Promise<Buffer> {
     const doc = new PDFDocument({ margin: 30, size: 'A4' });
@@ -511,6 +491,23 @@ export class AppointmentService {
       appointments.push(appointment);
     }
 
-    return await this.repo.save(appointments);
+    const updatedAppointments = await this.repo.save(appointments);
+    for (let i = 0; i < updatedAppointments.length; i++) {
+      await this.whatsappService.sendMessage({
+        codigoBot: 'd325d6747956f6a6f56587232b81712e',
+        codigoPlantilla: 'cancelar_agenda',
+        codigoPostalTel: '+34',
+        numeroReceptor: `34${updatedAppointments[i].clientPhoneNumber}`,
+        nombreReceptor: updatedAppointments[i].clientName,
+        fBotEncendido: true,
+        fMostrarMensajeEnChat: true,
+        parametros: {
+          1: `${updatedAppointments[i].day.dayName}`,
+          2: updatedAppointments[i].startingHour,
+          3: updatedAppointments[i].location.locationName,
+        },
+      });
+    }
+    return updatedAppointments;
   }
 }

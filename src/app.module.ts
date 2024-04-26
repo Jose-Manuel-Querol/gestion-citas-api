@@ -17,6 +17,7 @@ import { AppointmentModule } from './appointment/appointment.module';
 import { AddressModule } from './address/address.module';
 import { FranjaModule } from './franja/franja.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { WhatsappService } from './shared/whatsapp.service';
 
 @Module({
   imports: [
@@ -57,6 +58,7 @@ import { ScheduleModule } from '@nestjs/schedule';
       }),
     },
     SendgridService,
+    WhatsappService,
   ],
 })
 export class AppModule {}

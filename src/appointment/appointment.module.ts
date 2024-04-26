@@ -7,6 +7,7 @@ import { DayModule } from '../day/day.module';
 import { AppointmentTypeAgentModule } from '../appointment-type-agent/appointment-type-agent.module';
 import { LocationModule } from '../location/location.module';
 import { AppointmentTypeModule } from '../appointment-type/appointment-type.module';
+import { WhatsappService } from '../shared/whatsapp.service';
 
 @Module({
   imports: [
@@ -17,7 +18,7 @@ import { AppointmentTypeModule } from '../appointment-type/appointment-type.modu
     AppointmentTypeModule,
   ],
   controllers: [AppointmentController],
-  providers: [AppointmentService],
+  providers: [AppointmentService, WhatsappService],
   exports: [AppointmentService],
 })
 export class AppointmentModule {}
