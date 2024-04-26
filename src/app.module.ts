@@ -1,9 +1,8 @@
 import { Module, ValidationPipe } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { DBOptions } from '../db.datasourceoptions';
 import { APP_PIPE } from '@nestjs/core';
 import { SendgridService } from './shared/sendgrid.service';
 import { AccountModule } from './account/account.module';
@@ -18,21 +17,26 @@ import { AddressModule } from './address/address.module';
 import { FranjaModule } from './franja/franja.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { WhatsappService } from './shared/whatsapp.service';
+import { DataSourceOptionsService } from '../datasourceoptions.service';
+import { DatabaseModule } from '../database.module';
 
 @Module({
   imports: [
     ScheduleModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: `.env`,
+      envFilePath:
+        process.env.NODE_ENV === 'development' ? '.env.development' : '.env',
     }),
     TypeOrmModule.forRootAsync({
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      useFactory: (config: ConfigService) => {
+      imports: [DatabaseModule],
+      inject: [DataSourceOptionsService],
+      useFactory: (dsOptionsService: DataSourceOptionsService) => {
         const dbOptions: TypeOrmModuleOptions = {};
-
-        Object.assign(dbOptions, DBOptions);
-
+        const newDbOptions = dsOptionsService.getDBConfig();
+        Object.assign(dbOptions, newDbOptions);
+        console.log('dbOptions', dbOptions);
+        console.log('newDbOptions', newDbOptions);
         return dbOptions;
       },
     }),
