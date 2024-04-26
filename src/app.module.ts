@@ -24,7 +24,7 @@ import { WhatsappService } from './shared/whatsapp.service';
     ScheduleModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: `.env.production`,
+      envFilePath: `.env`,
       /*envFilePath:
         process.env.NODE_ENV === 'development'
           ? `.env.${process.env.NODE_ENV}`
