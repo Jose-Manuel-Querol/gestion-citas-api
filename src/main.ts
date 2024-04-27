@@ -12,8 +12,8 @@ async function bootstrap() {
     origin: ['http://localhost:4200', 'http://127.0.0.1:4200'],
     credentials: true,
   });
-  await app.listen(3000, () => {
-    console.log('Listening on port:3000');
+  await app.listen(3500, () => {
+    console.log('Listening on port:3500');
   });
 }
 bootstrap();
