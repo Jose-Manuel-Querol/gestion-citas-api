@@ -35,8 +35,6 @@ import { DatabaseModule } from '../database.module';
         const dbOptions: TypeOrmModuleOptions = {};
         const newDbOptions = dsOptionsService.getDBConfig();
         Object.assign(dbOptions, newDbOptions);
-        console.log('dbOptions', dbOptions);
-        console.log('newDbOptions', newDbOptions);
         return dbOptions;
       },
     }),
