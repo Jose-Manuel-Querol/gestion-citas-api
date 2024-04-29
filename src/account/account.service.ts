@@ -131,6 +131,22 @@ export class AccountService {
     return await this.repo.save(account);
   }
 
+  async generateToken(accountId: number): Promise<Account> {
+    const account = await this.getById(accountId);
+    let apiToken = randomBytes(48).toString('hex');
+    let foundToken = await this.getAccountByToken(apiToken);
+    while (foundToken) {
+      apiToken = randomBytes(48).toString('hex');
+      foundToken = await this.getAccountByToken(apiToken);
+    }
+    account.apiToken = apiToken;
+    return await this.repo.save(account);
+  }
+
+  async getAccountByToken(apiToken: string): Promise<Account> {
+    return await this.repo.findOne({ where: { apiToken } });
+  }
+
   async forgotPassword(
     email: string,
     resetPasswordToken: string,

@@ -9,6 +9,9 @@ export class AccountDto {
   email: string;
 
   @Expose()
+  apiToken: string;
+
+  @Expose()
   resetPasswordToken: string;
 
   @Expose()

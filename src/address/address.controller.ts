@@ -14,10 +14,25 @@ import { CreateAddressDto } from './dtos/create-address.dto';
 import { JwtAccountGuard } from '../account/account-auth/account-guards/account.jwt.guard';
 import { RolesGuard } from '../account/account-auth/account-guards/roles.guard';
 import { Roles } from '../shared/roles.decorator';
+import { ApiGuard } from '../account/account-auth/account-guards/api.guard';
 
 @Controller('address')
 export class AddressController {
   constructor(private addressService: AddressService) {}
+
+  @UseGuards(ApiGuard)
+  @Get('secure/get-all')
+  async getAllAddressPublicApi(): Promise<Address[]> {
+    return await this.addressService.getAll();
+  }
+
+  @UseGuards(ApiGuard)
+  @Get('secure/by-address-name')
+  async getAllAddressByAddressNamePublicApi(
+    @Query('addressName') addressName: string,
+  ): Promise<{ address: string }[]> {
+    return await this.addressService.getAllByAddressName(addressName);
+  }
 
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')

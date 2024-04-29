@@ -19,11 +19,33 @@ import { Roles } from '../shared/roles.decorator';
 import { GetAllAppointmentsByAgents } from './dtos/get-all-appointments-by-agents.dto';
 import { GetAllAppointmentsByAppointmentType } from './dtos/get-all-appointments-by-appointment-type.dto';
 import { Response } from 'express';
+import { ApiGuard } from '../account/account-auth/account-guards/api.guard';
 
 @Controller('appointment')
 export class AppointmentController {
   constructor(private appointmentService: AppointmentService) {}
+  @UseGuards(ApiGuard)
+  @Get('secure/available-dates')
+  async getAllAvailableAppointmentsPublicApi(
+    @Query('appointmentTypeId') appointmentTypeId: string,
+    //@Query('zoneId') zoneId: string,
+  ) {
+    return await this.appointmentService.findAvailableAppointments(
+      parseInt(appointmentTypeId),
+      //parseInt(zoneId),
+    );
+  }
 
+  @UseGuards(ApiGuard)
+  @Post('secure/create')
+  async createAppointmentPublicApi(
+    @Body() body: CreateAppointmentDto,
+  ): Promise<Appointment> {
+    return await this.appointmentService.create(body);
+  }
+
+  @UseGuards(JwtAccountGuard, RolesGuard)
+  @Roles('Admin')
   @Get('available-dates')
   async getAllAvailableAppointments(
     @Query('appointmentTypeId') appointmentTypeId: string,
@@ -35,6 +57,7 @@ export class AppointmentController {
     );
   }
 
+  @UseGuards(JwtAccountGuard)
   @Get('between-dates')
   async getAllWithinDates(
     @Query('startingDate') startingDate: string,
@@ -54,6 +77,8 @@ export class AppointmentController {
     );
   }
 
+  @UseGuards(JwtAccountGuard, RolesGuard)
+  @Roles('Admin')
   @Get('generate-report')
   async generateAppointmentsReport(
     @Query('startingDate') startingDate: string,
@@ -106,6 +131,14 @@ export class AppointmentController {
   @Roles('Admin')
   @Get('/:id')
   async getAppointmentById(
+    @Param('id') appointmentId: string,
+  ): Promise<Appointment> {
+    return await this.appointmentService.getById(parseInt(appointmentId));
+  }
+
+  @UseGuards(ApiGuard)
+  @Get('/secure/:id')
+  async getAppointmentByIdPublicApi(
     @Param('id') appointmentId: string,
   ): Promise<Appointment> {
     return await this.appointmentService.getById(parseInt(appointmentId));
@@ -176,5 +209,22 @@ export class AppointmentController {
     @Body() body: CreateAppointmentDto,
   ): Promise<Appointment> {
     return await this.appointmentService.update(parseInt(appointmentId), body);
+  }
+
+  @UseGuards(JwtAccountGuard, RolesGuard)
+  @Roles('Admin')
+  @Get('cancel-one/:id')
+  async cancelOneAppointment(
+    @Param('id') appointmentId: string,
+  ): Promise<Appointment> {
+    return await this.appointmentService.cancelOne(parseInt(appointmentId));
+  }
+
+  @UseGuards(ApiGuard)
+  @Get('secure/cancel-one/:id')
+  async cancelOneAppointmentPublicApi(
+    @Param('id') appointmentId: string,
+  ): Promise<Appointment> {
+    return await this.appointmentService.cancelOne(parseInt(appointmentId));
   }
 }

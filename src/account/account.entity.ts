@@ -27,6 +27,9 @@ export class Account {
   @Column({ nullable: true })
   verificationTokenExpiration: Date;
 
+  @Column({ nullable: true, unique: true })
+  apiToken: string;
+
   @CreateDateColumn()
   createdAt: Date;
 

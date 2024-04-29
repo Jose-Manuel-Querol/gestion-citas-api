@@ -510,4 +510,26 @@ export class AppointmentService {
     }
     return updatedAppointments;
   }
+
+  async cancelOne(appointmentId: number): Promise<Appointment> {
+    const appointment = await this.getById(appointmentId);
+    appointment.cancelled = true;
+
+    const updatedAppointment = await this.repo.save(appointment);
+    await this.whatsappService.sendMessage({
+      codigoBot: 'd325d6747956f6a6f56587232b81712e',
+      codigoPlantilla: 'cancelar_agenda',
+      codigoPostalTel: '+34',
+      numeroReceptor: `34${updatedAppointment.clientPhoneNumber}`,
+      nombreReceptor: updatedAppointment.clientName,
+      fBotEncendido: true,
+      fMostrarMensajeEnChat: true,
+      parametros: {
+        1: `${updatedAppointment.day.dayName}`,
+        2: updatedAppointment.startingHour,
+        3: updatedAppointment.location.locationName,
+      },
+    });
+    return updatedAppointment;
+  }
 }

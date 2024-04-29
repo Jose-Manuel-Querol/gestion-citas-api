@@ -96,6 +96,18 @@ export class AccountController {
     return account;
   }
 
+  @Get('/generate-token/:id')
+  @UseGuards(JwtAccountGuard, RolesGuard)
+  @Roles('Admin')
+  @Serialize(AccountDto)
+  async generateApiToken(@Param('id') accountId: string) {
+    const account = await this.accountService.generateToken(
+      parseInt(accountId),
+    );
+
+    return account;
+  }
+
   @UseGuards(JwtAccountGuard)
   @Serialize(AccountDto)
   @Put('/change-password/:id')

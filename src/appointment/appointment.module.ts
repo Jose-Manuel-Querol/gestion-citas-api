@@ -8,6 +8,7 @@ import { AppointmentTypeAgentModule } from '../appointment-type-agent/appointmen
 import { LocationModule } from '../location/location.module';
 import { AppointmentTypeModule } from '../appointment-type/appointment-type.module';
 import { WhatsappService } from '../shared/whatsapp.service';
+import { AccountModule } from '../account/account.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { WhatsappService } from '../shared/whatsapp.service';
     AppointmentTypeAgentModule,
     LocationModule,
     AppointmentTypeModule,
+    AccountModule,
   ],
   controllers: [AppointmentController],
   providers: [AppointmentService, WhatsappService],
