@@ -37,6 +37,20 @@ export class AgentController {
 
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
+  @Get('/activate-now/:id')
+  async activateAgentById(@Param('id') agentId: string): Promise<Agent> {
+    return await this.agentService.activate(parseInt(agentId));
+  }
+
+  @UseGuards(JwtAccountGuard, RolesGuard)
+  @Roles('Admin')
+  @Get('/deactivate-now/:id')
+  async deactivateAgentById(@Param('id') agentId: string): Promise<Agent> {
+    return await this.agentService.deactivate(parseInt(agentId));
+  }
+
+  @UseGuards(JwtAccountGuard, RolesGuard)
+  @Roles('Admin')
   @Get('by-slug/:slug')
   async getAgentBySlug(@Param('slug') slug: string): Promise<Agent> {
     return await this.agentService.getBySlug(slug);

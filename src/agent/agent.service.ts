@@ -117,6 +117,18 @@ export class AgentService {
     return agent;
   }
 
+  async activate(agentId: number): Promise<Agent> {
+    const agent = await this.getById(agentId);
+    agent.active = true;
+    return await this.repo.save(agent);
+  }
+
+  async deactivate(agentId: number): Promise<Agent> {
+    const agent = await this.getById(agentId);
+    agent.active = false;
+    return await this.repo.save(agent);
+  }
+
   async create(createDto: CreateAgentDto): Promise<Agent> {
     const zone = await this.zoneService.getById(createDto.zoneId);
     const foundAgents = await this.getAllByEmail(createDto.email);

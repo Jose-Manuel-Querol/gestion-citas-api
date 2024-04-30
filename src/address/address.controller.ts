@@ -15,11 +15,20 @@ import { JwtAccountGuard } from '../account/account-auth/account-guards/account.
 import { RolesGuard } from '../account/account-auth/account-guards/roles.guard';
 import { Roles } from '../shared/roles.decorator';
 import { ApiGuard } from '../account/account-auth/account-guards/api.guard';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { AddressExampleDto } from './dtos/address.example.dto';
 
+@ApiTags('Direcciones')
 @Controller('address')
 export class AddressController {
   constructor(private addressService: AddressService) {}
 
+  @ApiOperation({ summary: 'Obtener todas las direcciones' })
+  @ApiResponse({
+    status: 200,
+    description: 'Obtiene todas las direcciones',
+    type: [AddressExampleDto],
+  })
   @UseGuards(ApiGuard)
   @Get('secure/get-all')
   async getAllAddressPublicApi(): Promise<Address[]> {
