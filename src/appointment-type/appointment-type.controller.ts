@@ -22,8 +22,7 @@ export class AppointmentTypeController {
   constructor(private appointmentTypeService: AppointmentTypeService) {}
 
   @ApiExcludeEndpoint()
-  @UseGuards(JwtAccountGuard, RolesGuard)
-  @Roles('Admin')
+  @UseGuards(JwtAccountGuard)
   @Get()
   async getAllAppointmentTypes(): Promise<AppointmentType[]> {
     return await this.appointmentTypeService.getAll();

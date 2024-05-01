@@ -258,7 +258,6 @@ export class AppointmentService {
       appointmentTypeId,
     );
 
-    // Temporary dictionary to track unique dates
     const uniqueDates = new Map();
 
     // Step 2: Calculate available time slots for each day
@@ -279,7 +278,7 @@ export class AppointmentService {
 
     // Step 3: Filter out duplicates by date and ensure only days with available slots are included
     const availability = rawAvailability.filter((entry) => {
-      const dateKey = entry.date.split('T')[0]; // Extract only the date part
+      const dateKey = entry.date.split('T')[0];
       if (uniqueDates.has(dateKey)) {
         return false;
       }
