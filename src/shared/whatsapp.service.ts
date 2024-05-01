@@ -9,7 +9,6 @@ export class WhatsappService {
   async sendMessage(
     messageData: WhatsappTemplateDto,
   ): Promise<WhatsappTemplateDto> {
-    console.log('messageData', messageData);
     const response = await axios.post(
       'https://appwhatsapp.vitar.es/Bots/WhatsappServiceTemplate',
       messageData,
