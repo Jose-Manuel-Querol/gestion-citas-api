@@ -15,11 +15,13 @@ import { CreateAppointmentTypeDto } from './dtos/create-appointment-type.dto';
 import { UpdateAppointmentTypeDto } from './dtos/update-appointment-type.dto';
 import { RolesGuard } from '../account/account-auth/account-guards/roles.guard';
 import { Roles } from '../shared/roles.decorator';
+import { ApiExcludeEndpoint } from '@nestjs/swagger';
 
 @Controller('appointment-type')
 export class AppointmentTypeController {
   constructor(private appointmentTypeService: AppointmentTypeService) {}
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
   @Get()
@@ -27,6 +29,7 @@ export class AppointmentTypeController {
     return await this.appointmentTypeService.getAll();
   }
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
   @Get('/:id')
@@ -38,6 +41,7 @@ export class AppointmentTypeController {
     );
   }
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
   @Post()
@@ -47,6 +51,7 @@ export class AppointmentTypeController {
     return await this.appointmentTypeService.create(body);
   }
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
   @Put('/:id')
@@ -60,6 +65,7 @@ export class AppointmentTypeController {
     );
   }
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
   @Delete('/:id')

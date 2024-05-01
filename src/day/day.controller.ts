@@ -11,11 +11,13 @@ import { Day } from './day.entity';
 import { JwtAccountGuard } from '../account/account-auth/account-guards/account.jwt.guard';
 import { RolesGuard } from '../account/account-auth/account-guards/roles.guard';
 import { Roles } from '../shared/roles.decorator';
+import { ApiExcludeEndpoint } from '@nestjs/swagger';
 
 @Controller('day')
 export class DayController {
   constructor(private dayService: DayService) {}
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
   @Get('by-appointment-type-agent')
@@ -27,6 +29,7 @@ export class DayController {
     );
   }
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
   @Get('/:id')
@@ -34,6 +37,7 @@ export class DayController {
     return await this.dayService.getById(parseInt(dayId));
   }
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
   @Delete('/:id')

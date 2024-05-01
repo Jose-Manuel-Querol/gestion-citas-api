@@ -20,10 +20,28 @@ import { GetAllAppointmentsByAgents } from './dtos/get-all-appointments-by-agent
 import { GetAllAppointmentsByAppointmentType } from './dtos/get-all-appointments-by-appointment-type.dto';
 import { Response } from 'express';
 import { ApiGuard } from '../account/account-auth/account-guards/api.guard';
+import {
+  ApiBody,
+  ApiExcludeEndpoint,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { AvailableDatesExampleDto } from './dtos/available-date.example.dto';
+import { AppointmentExampleDto } from './dtos/appointment.example.dto';
+import { CreateAppointmentExampleDto } from './dtos/create-appointment.example.dto';
 
+@ApiTags('Citas')
 @Controller('appointment')
 export class AppointmentController {
   constructor(private appointmentService: AppointmentService) {}
+
+  @ApiOperation({ summary: 'Obtener todas las citas disponibles' })
+  @ApiResponse({
+    status: 200,
+    description: 'Obtener todas las citas disponibles',
+    type: [AvailableDatesExampleDto],
+  })
   @UseGuards(ApiGuard)
   @Get('secure/available-dates')
   async getAllAvailableAppointmentsPublicApi(
@@ -36,6 +54,13 @@ export class AppointmentController {
     );
   }
 
+  @ApiOperation({ summary: 'Crear una cita' })
+  @ApiBody({ type: CreateAppointmentExampleDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Crear una Cita',
+    type: AppointmentExampleDto,
+  })
   @UseGuards(ApiGuard)
   @Post('secure/create')
   async createAppointmentPublicApi(
@@ -44,6 +69,7 @@ export class AppointmentController {
     return await this.appointmentService.create(body);
   }
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
   @Get('available-dates')
@@ -57,6 +83,7 @@ export class AppointmentController {
     );
   }
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard)
   @Get('between-dates')
   async getAllWithinDates(
@@ -77,6 +104,7 @@ export class AppointmentController {
     );
   }
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
   @Get('generate-report')
@@ -106,6 +134,7 @@ export class AppointmentController {
     res.end(buffer);
   }
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
   @Get()
@@ -113,6 +142,7 @@ export class AppointmentController {
     return await this.appointmentService.getAll();
   }
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
   @Get('by-day-after-tomorrow')
@@ -120,6 +150,7 @@ export class AppointmentController {
     return await this.appointmentService.getAllWithinDayAfterTomorrow();
   }
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
   @Get('all-active')
@@ -127,6 +158,7 @@ export class AppointmentController {
     return await this.appointmentService.getAllActive();
   }
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
   @Get('/:id')
@@ -136,6 +168,12 @@ export class AppointmentController {
     return await this.appointmentService.getById(parseInt(appointmentId));
   }
 
+  @ApiOperation({ summary: 'Obtener una cita por su ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Obtener una cita por su ID',
+    type: AppointmentExampleDto,
+  })
   @UseGuards(ApiGuard)
   @Get('/secure/:id')
   async getAppointmentByIdPublicApi(
@@ -144,6 +182,7 @@ export class AppointmentController {
     return await this.appointmentService.getById(parseInt(appointmentId));
   }
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
   @Post()
@@ -153,6 +192,7 @@ export class AppointmentController {
     return await this.appointmentService.create(body);
   }
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
   @Post('cancelled-by-agents')
@@ -166,6 +206,7 @@ export class AppointmentController {
     );
   }
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
   @Post('active-by-agents')
@@ -179,6 +220,7 @@ export class AppointmentController {
     );
   }
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
   @Post('active-by-types')
@@ -192,6 +234,7 @@ export class AppointmentController {
     );
   }
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
   @Put('cancel-many')
@@ -201,6 +244,7 @@ export class AppointmentController {
     return await this.appointmentService.cancel(body);
   }
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
   @Put('update-one/:id')
@@ -211,6 +255,7 @@ export class AppointmentController {
     return await this.appointmentService.update(parseInt(appointmentId), body);
   }
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
   @Get('cancel-one/:id')
@@ -220,6 +265,12 @@ export class AppointmentController {
     return await this.appointmentService.cancelOne(parseInt(appointmentId));
   }
 
+  @ApiOperation({ summary: 'Cancelar una cita' })
+  @ApiResponse({
+    status: 200,
+    description: 'Cancelar una cita',
+    type: AppointmentExampleDto,
+  })
   @UseGuards(ApiGuard)
   @Get('secure/cancel-one/:id')
   async cancelOneAppointmentPublicApi(

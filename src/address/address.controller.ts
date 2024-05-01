@@ -15,8 +15,14 @@ import { JwtAccountGuard } from '../account/account-auth/account-guards/account.
 import { RolesGuard } from '../account/account-auth/account-guards/roles.guard';
 import { Roles } from '../shared/roles.decorator';
 import { ApiGuard } from '../account/account-auth/account-guards/api.guard';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiExcludeEndpoint,
+} from '@nestjs/swagger';
 import { AddressExampleDto } from './dtos/address.example.dto';
+import { CompleteAddressExampleDto } from './dtos/complete-address.example.dto';
 
 @ApiTags('Direcciones')
 @Controller('address')
@@ -35,6 +41,16 @@ export class AddressController {
     return await this.addressService.getAll();
   }
 
+  @ApiOperation({
+    summary:
+      'Obtener todas las direcciones completas, buscando por el nombre de la dirección',
+  })
+  @ApiResponse({
+    status: 200,
+    description:
+      'Obtener todas las direcciones completas, buscando por el nombre de la dirección',
+    type: [CompleteAddressExampleDto],
+  })
   @UseGuards(ApiGuard)
   @Get('secure/by-address-name')
   async getAllAddressByAddressNamePublicApi(
@@ -43,6 +59,7 @@ export class AddressController {
     return await this.addressService.getAllByAddressName(addressName);
   }
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
   @Get()
@@ -50,6 +67,7 @@ export class AddressController {
     return await this.addressService.getAll();
   }
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
   @Get('by-zone')
@@ -59,6 +77,7 @@ export class AddressController {
     return await this.addressService.getAllByZone(parseInt(zoneId));
   }
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
   @Get('by-address-name')
@@ -68,6 +87,7 @@ export class AddressController {
     return await this.addressService.getAllByAddressName(addressName);
   }
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
   @Get('/:id')
@@ -75,6 +95,7 @@ export class AddressController {
     return await this.addressService.getById(parseInt(addressId));
   }
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
   @Post('create-one')
@@ -82,6 +103,7 @@ export class AddressController {
     return await this.addressService.createOne(body);
   }
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
   @Delete('/:id')

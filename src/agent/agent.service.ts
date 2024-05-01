@@ -120,6 +120,8 @@ export class AgentService {
   async activate(agentId: number): Promise<Agent> {
     const agent = await this.getById(agentId);
     agent.active = true;
+    agent.activationStart = null;
+    agent.activationEnd = null;
     return await this.repo.save(agent);
   }
 

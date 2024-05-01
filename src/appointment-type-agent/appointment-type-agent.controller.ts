@@ -11,6 +11,7 @@ import { AppointmentTypeAgent } from './appointment-type-agent.entity';
 import { JwtAccountGuard } from '../account/account-auth/account-guards/account.jwt.guard';
 import { RolesGuard } from '../account/account-auth/account-guards/roles.guard';
 import { Roles } from '../shared/roles.decorator';
+import { ApiExcludeEndpoint } from '@nestjs/swagger';
 
 @Controller('appointment-type-agent')
 export class AppointmentTypeAgentController {
@@ -18,6 +19,7 @@ export class AppointmentTypeAgentController {
     private appointmentTypeAgentService: AppointmentTypeAgentService,
   ) {}
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
   @Get()
@@ -25,6 +27,7 @@ export class AppointmentTypeAgentController {
     return await this.appointmentTypeAgentService.getAll();
   }
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard)
   @Get('by-agent')
   async getAllAppointmentTypeAgentsByAgent(
@@ -35,6 +38,7 @@ export class AppointmentTypeAgentController {
     );
   }
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
   @Get('by-appointment-type')
@@ -46,6 +50,7 @@ export class AppointmentTypeAgentController {
     );
   }
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard)
   @Get('/:id')
   async getAppointmentTypeAgentById(
@@ -74,6 +79,7 @@ export class AppointmentTypeAgentController {
     return await this.appointmentTypeAgentService.updateMany(body);
   }*/
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
   @Delete('/:id')

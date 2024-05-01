@@ -15,11 +15,13 @@ import { CreateLocationDto } from './dtos/create-location.dto';
 import { UpdateLocationDto } from './dtos/update-location.dto';
 import { RolesGuard } from '../account/account-auth/account-guards/roles.guard';
 import { Roles } from '../shared/roles.decorator';
+import { ApiExcludeEndpoint } from '@nestjs/swagger';
 
 @Controller('location')
 export class LocationController {
   constructor(private locationService: LocationService) {}
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
   @Get()
@@ -27,6 +29,7 @@ export class LocationController {
     return await this.locationService.getAll();
   }
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
   @Get('/:id')
@@ -34,6 +37,7 @@ export class LocationController {
     return await this.locationService.getById(parseInt(locationId));
   }
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
   @Post()
@@ -41,6 +45,7 @@ export class LocationController {
     return await this.locationService.create(body);
   }
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
   @Put('/:id')
@@ -51,6 +56,7 @@ export class LocationController {
     return await this.locationService.update(parseInt(locationId), body);
   }
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
   @Delete('/:id')

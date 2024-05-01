@@ -20,8 +20,24 @@ async function bootstrap() {
       'Esta documentación contendrá toda la información que necesitan para utilizar los endpoints de la  API Pública',
     )
     .setVersion('1.0')
+    .addBearerAuth(
+      { type: 'http', scheme: 'bearer', bearerFormat: 'Token' },
+      'apiToken',
+    )
     .build();
-  const document = SwaggerModule.createDocument(app, config);
+  const document = SwaggerModule.createDocument(app, config, {
+    deepScanRoutes: true,
+    include: [AppModule],
+    operationIdFactory: (controllerKey: string, methodKey: string) => methodKey,
+  });
+  document.components.securitySchemes = {
+    apiToken: {
+      type: 'http',
+      scheme: 'bearer',
+      bearerFormat: 'Token',
+    },
+  };
+  document.security = [{ apiToken: [] }];
   SwaggerModule.setup('docs', app, document);
   await app.listen(3500, () => {
     console.log('Listening on port:3500');

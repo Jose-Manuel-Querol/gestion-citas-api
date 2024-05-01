@@ -28,6 +28,7 @@ import { ValidateTokenDto } from './dtos/validate-token.dto';
 import { RecoverPasswordDto } from './dtos/recover-password.dto';
 import { RolesGuard } from './account-auth/account-guards/roles.guard';
 import { Roles } from '../shared/roles.decorator';
+import { ApiExcludeEndpoint } from '@nestjs/swagger';
 
 @Controller('account')
 export class AccountController {
@@ -36,6 +37,7 @@ export class AccountController {
     private sendgridService: SendgridService,
   ) {}
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
   @Get()
@@ -43,6 +45,7 @@ export class AccountController {
     return await this.accountService.getAll();
   }
 
+  @ApiExcludeEndpoint()
   @Serialize(AccountDto)
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
@@ -51,6 +54,7 @@ export class AccountController {
     return await this.accountService.getByEmail(email);
   }
 
+  @ApiExcludeEndpoint()
   @Serialize(AccountDto)
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
@@ -60,6 +64,7 @@ export class AccountController {
     return account;
   }
 
+  @ApiExcludeEndpoint()
   @Serialize(AccountDto)
   @Post('/signup-admin')
   async signupAdmin(@Body() body: SignUpAccountDto) {
@@ -67,6 +72,7 @@ export class AccountController {
     return account;
   }
 
+  @ApiExcludeEndpoint()
   @Serialize(AccountDto)
   @Post('/signup-agent')
   async signupAgent(@Body() body: SignUpAccountDto) {
@@ -74,12 +80,14 @@ export class AccountController {
     return account;
   }
 
+  @ApiExcludeEndpoint()
   @UseGuards(LocalAccountGuard)
   @Post('/login')
   async loginAccount(@Request() req: any) {
     return await this.accountService.jwtValidationAccount(req.user);
   }
 
+  @ApiExcludeEndpoint()
   @Put('/:id')
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
@@ -96,6 +104,7 @@ export class AccountController {
     return account;
   }
 
+  @ApiExcludeEndpoint()
   @Get('/generate-token/:id')
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
@@ -108,6 +117,7 @@ export class AccountController {
     return account;
   }
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard)
   @Serialize(AccountDto)
   @Put('/change-password/:id')
@@ -145,6 +155,7 @@ export class AccountController {
     return account;
   }
 
+  @ApiExcludeEndpoint()
   @Serialize(AccountDto)
   @Put('/recover-password/:id')
   async recoverPasswordAccount(
@@ -191,6 +202,7 @@ export class AccountController {
     return account;
   }
 
+  @ApiExcludeEndpoint()
   @Put('/validate-recover-token/:id')
   async validateUserRecoverToken(
     @Param('id') accountId: string,
@@ -213,6 +225,7 @@ export class AccountController {
     return { validated: validation };
   }
 
+  @ApiExcludeEndpoint()
   @Serialize(AccountDto)
   @Post('/forgot-password')
   async forgotPasswordAccount(@Body() body: ForgotPasswordDto) {
@@ -250,6 +263,7 @@ export class AccountController {
     return account;
   }
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard)
   @Serialize(AccountDto)
   @Delete('/:id')

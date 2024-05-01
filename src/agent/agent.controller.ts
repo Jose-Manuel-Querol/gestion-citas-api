@@ -16,11 +16,13 @@ import { JwtAccountGuard } from '../account/account-auth/account-guards/account.
 import { RolesGuard } from '../account/account-auth/account-guards/roles.guard';
 import { Roles } from '../shared/roles.decorator';
 import { ScheduleActivationAgentDto } from './dtos/scheadule-activation-agent.dto';
+import { ApiExcludeEndpoint } from '@nestjs/swagger';
 
 @Controller('agent')
 export class AgentController {
   constructor(private agentService: AgentService) {}
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
   @Get()
@@ -28,6 +30,7 @@ export class AgentController {
     return await this.agentService.getAll();
   }
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
   @Get('/:id')
@@ -35,6 +38,7 @@ export class AgentController {
     return await this.agentService.getById(parseInt(agentId));
   }
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
   @Get('/activate-now/:id')
@@ -42,6 +46,7 @@ export class AgentController {
     return await this.agentService.activate(parseInt(agentId));
   }
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
   @Get('/deactivate-now/:id')
@@ -49,6 +54,7 @@ export class AgentController {
     return await this.agentService.deactivate(parseInt(agentId));
   }
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
   @Get('by-slug/:slug')
@@ -56,6 +62,7 @@ export class AgentController {
     return await this.agentService.getBySlug(slug);
   }
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
   @Post()
@@ -63,6 +70,7 @@ export class AgentController {
     return await this.agentService.create(body);
   }
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
   @Put('/:id')
@@ -73,6 +81,7 @@ export class AgentController {
     return await this.agentService.update(parseInt(agentId), body);
   }
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
   @Put('/deactivate/:id')
@@ -83,6 +92,7 @@ export class AgentController {
     return await this.agentService.deactivateAgent(parseInt(agentId), body);
   }
 
+  @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard, RolesGuard)
   @Roles('Admin')
   @Delete('/:id')
