@@ -207,8 +207,7 @@ export class AppointmentController {
   }
 
   @ApiExcludeEndpoint()
-  @UseGuards(JwtAccountGuard, RolesGuard)
-  @Roles('Admin')
+  @UseGuards(JwtAccountGuard)
   @Post('active-by-agents')
   async getAllActiveAppointmentsWithinDatesByAgents(
     @Body() body: GetAllAppointmentsByAgents,
