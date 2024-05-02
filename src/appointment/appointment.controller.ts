@@ -105,8 +105,7 @@ export class AppointmentController {
   }
 
   @ApiExcludeEndpoint()
-  @UseGuards(JwtAccountGuard, RolesGuard)
-  @Roles('Admin')
+  @UseGuards(JwtAccountGuard)
   @Get('generate-report')
   async generateAppointmentsReport(
     @Query('startingDate') startingDate: string,
