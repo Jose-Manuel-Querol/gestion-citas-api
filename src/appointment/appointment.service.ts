@@ -224,6 +224,69 @@ export class AppointmentService {
     return await queryBuilder.getMany();
   }
 
+  async getForReport(
+    startingDate: string,
+    endingDate: string,
+    typeName?: string,
+    clientName?: string,
+    firstName?: string,
+    agentId?: string,
+    code?: string,
+  ): Promise<Appointment[]> {
+    const queryBuilder = this.repo.createQueryBuilder('appointment');
+    queryBuilder
+      .leftJoinAndSelect(
+        'appointment.appointmentTypeAgent',
+        'appointmentTypeAgent',
+      )
+      .leftJoinAndSelect(
+        'appointmentTypeAgent.appointmentType',
+        'appointmentType',
+      )
+      .leftJoinAndSelect('appointment.day', 'day')
+      .leftJoinAndSelect('appointmentTypeAgent.agent', 'agent')
+      .leftJoinAndSelect('appointment.location', 'location');
+
+    // Mandatory conditions
+    queryBuilder
+      .where('appointment.cancelled = :cancelled', { cancelled: false })
+      .andWhere('appointment.dayDate BETWEEN :startingDate AND :endingDate', {
+        startingDate,
+        endingDate,
+      });
+
+    // Optional conditions
+    if (clientName) {
+      queryBuilder.andWhere('appointment.clientName LIKE  :clientName', {
+        clientName: `%${clientName}%`,
+      });
+    }
+    if (code) {
+      queryBuilder.andWhere('appointment.code LIKE  :code', {
+        code: `%${code}%`,
+      });
+    }
+    if (typeName) {
+      queryBuilder.andWhere('appointmentType.typeName LIKE :typeName', {
+        typeName: `%${typeName}%`,
+      });
+    }
+
+    if (firstName) {
+      queryBuilder.andWhere('agent.firstName LIKE  :firstName', {
+        firstName: `%${firstName}%`,
+      });
+    }
+
+    if (agentId) {
+      queryBuilder.andWhere('agent.agentId =  :agentId', {
+        agentId: parseInt(agentId),
+      });
+    }
+
+    return await queryBuilder.getMany();
+  }
+
   async getAllActive(): Promise<Appointment[]> {
     return await this.repo.find({
       where: { cancelled: false },

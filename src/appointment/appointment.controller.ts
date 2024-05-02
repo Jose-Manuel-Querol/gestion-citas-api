@@ -115,14 +115,16 @@ export class AppointmentController {
     @Query('typeName') typeName?: string,
     @Query('clientName') clientName?: string,
     @Query('firstName') firstName?: string,
+    @Query('agentId') agentId?: string,
     @Query('code') code?: string,
   ) {
-    const appointments = await this.appointmentService.getAllWithinDates(
+    const appointments = await this.appointmentService.getForReport(
       startingDate,
       endingDate,
       typeName,
       clientName,
       firstName,
+      agentId,
       code,
     );
     const buffer = await this.appointmentService.createPdf(appointments);

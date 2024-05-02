@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Franja } from './franja.entity';
 import { Repository } from 'typeorm';
@@ -29,7 +33,24 @@ export class FranjaService {
     return franja;
   }
 
+  async getByFranja(createDto: CreateFranjaDto, day: Day): Promise<Franja[]> {
+    return await this.repo.find({
+      where: {
+        day: { dayId: day.dayId },
+        startingHour: createDto.startingHour,
+        endingHour: createDto.endingHour,
+      },
+    });
+  }
+
   async create(createDto: CreateFranjaDto, day: Day): Promise<Franja> {
+    const franjas = await this.getByFranja(createDto, day);
+    if (franjas.length > 0) {
+      throw new BadRequestException(
+        `Ha agregado dos franjas horarias identicas al día ${day.dayName} del tipo de cita ${day.appointmentTypeAgent.appointmentType.typeName}. 
+        No puede agregar la misma franja de tiempo al mismo día`,
+      );
+    }
     const franja = this.repo.create({
       day,
       endingHour: createDto.endingHour,

@@ -1,5 +1,7 @@
 import {
   BadRequestException,
+  forwardRef,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -12,6 +14,8 @@ import { UpdateAgentDto } from './dtos/update-agent.dto';
 import { generateSlug } from '../shared/shared-functions';
 import { AppointmentTypeAgentService } from '../appointment-type-agent/appointment-type-agent.service';
 import { ScheduleActivationAgentDto } from './dtos/scheadule-activation-agent.dto';
+import { AccountService } from '../account/account.service';
+import { UpdateAccountDto } from '../account/dtos/update-account.dto';
 
 @Injectable()
 export class AgentService {
@@ -19,6 +23,8 @@ export class AgentService {
     @InjectRepository(Agent) private repo: Repository<Agent>,
     private zoneService: ZoneService,
     private appointmentTypeAgentService: AppointmentTypeAgentService,
+    @Inject(forwardRef(() => AccountService))
+    private accountService: AccountService,
   ) {}
 
   async getAll(): Promise<Agent[]> {
@@ -55,6 +61,7 @@ export class AgentService {
           appointmentType: true,
           days: { franjas: true },
         },
+        account: true,
       },
     });
     if (!agent) {
@@ -97,6 +104,20 @@ export class AgentService {
     });
 
     return agents;
+  }
+
+  async getAgentByAccountId(accountId: number): Promise<Agent> {
+    const agent = await this.repo.findOne({
+      where: {
+        account: { accountId },
+      },
+    });
+
+    if (!agent) {
+      throw new NotFoundException('El agente no fue encontrado');
+    }
+
+    return agent;
   }
 
   async getBySlug(slug: string): Promise<Agent> {
@@ -196,6 +217,11 @@ export class AgentService {
 
     if (updateDto.email !== agent.email) {
       agent.email = updateDto.email;
+      const updatedAccount: UpdateAccountDto = { email: updateDto.email };
+      await this.accountService.updateAccount(
+        agent.account.accountId,
+        updatedAccount,
+      );
     }
 
     if (updateDto.firstName) {

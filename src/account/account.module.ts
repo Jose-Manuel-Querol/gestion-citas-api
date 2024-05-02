@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { AccountController } from './account.controller';
 import { AccountService } from './account.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -25,7 +25,7 @@ import { AgentModule } from '../agent/agent.module';
       inject: [ConfigService],
     }),
     RoleModule,
-    AgentModule,
+    forwardRef(() => AgentModule),
   ],
   controllers: [AccountController],
   providers: [

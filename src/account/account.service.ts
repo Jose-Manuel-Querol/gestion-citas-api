@@ -115,11 +115,23 @@ export class AccountService {
 
   async jwtValidationAccount(account: Account) {
     const payload = { sub: account.accountId };
-    return {
-      access_token: this.jwtService.sign(payload),
-      accountId: account.accountId,
-      role: account.role,
-    };
+    if (account.role.roleName === 'Agent') {
+      const agent = await this.agentService.getAgentByAccountId(
+        account.accountId,
+      );
+      return {
+        access_token: this.jwtService.sign(payload),
+        accountId: account.accountId,
+        role: account.role,
+        agentId: agent.agentId,
+      };
+    } else {
+      return {
+        access_token: this.jwtService.sign(payload),
+        accountId: account.accountId,
+        role: account.role,
+      };
+    }
   }
 
   async updateAccount(
