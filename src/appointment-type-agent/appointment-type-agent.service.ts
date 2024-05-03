@@ -108,7 +108,28 @@ export class AppointmentTypeAgentService {
     updateDto: UpdateManyAppointmentTypeAgent,
     agent: Agent,
   ): Promise<AppointmentTypeAgent[]> {
+    //Borramos cualquier appointmentTypeAgent que ya no existe
     const appointmentTypeAgents: AppointmentTypeAgent[] = [];
+    const appointmentTypeAgentsByAgent = await this.getAllByAgent(
+      agent.agentId,
+    );
+    const currentAppointmentTypeAgentIds = appointmentTypeAgentsByAgent.map(
+      (appointment) => appointment.appointmentTypeAgentId,
+    );
+    const newAppointmentTypeAgentIds = updateDto.appointmentTypeAgents.map(
+      (appointment) => appointment.appointmentTypeAgentId,
+    );
+    const appointmentTypeAgentsToDelete = currentAppointmentTypeAgentIds.filter(
+      (appointmentTypeAgentId) =>
+        !newAppointmentTypeAgentIds.includes(appointmentTypeAgentId),
+    );
+    if (appointmentTypeAgentsToDelete.length > 0) {
+      for (let i = 0; i < appointmentTypeAgentsToDelete.length; i++) {
+        await this.delete(appointmentTypeAgentsToDelete[i]);
+      }
+    }
+
+    //Modificamos los appointmentTypeAgent
     for (let i = 0; i < updateDto.appointmentTypeAgents.length; i++) {
       const appointmentType = await this.appointmentTypeService.getById(
         updateDto.appointmentTypeAgents[i].appointmentTypeId,
