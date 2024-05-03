@@ -6,7 +6,9 @@ import {
   Param,
   Post,
   Query,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { AddressService } from './address.service';
 import { Address } from './address.entity';
@@ -23,6 +25,7 @@ import {
 } from '@nestjs/swagger';
 import { AddressExampleDto } from './dtos/address.example.dto';
 import { CompleteAddressExampleDto } from './dtos/complete-address.example.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('Direcciones')
 @Controller('address')
@@ -101,6 +104,16 @@ export class AddressController {
   @Post('create-one')
   async createOneAddress(@Body() body: CreateAddressDto): Promise<Address> {
     return await this.addressService.createOne(body);
+  }
+
+  @ApiExcludeEndpoint()
+  @UseGuards(JwtAccountGuard, RolesGuard)
+  @Roles('Admin')
+  @Post('upload-excel')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadFile(@UploadedFile() file: Express.Multer.File) {
+    const excel = await this.addressService.importAddressesFromExcel(file);
+    return excel;
   }
 
   @ApiExcludeEndpoint()

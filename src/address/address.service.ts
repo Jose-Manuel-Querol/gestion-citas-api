@@ -4,6 +4,7 @@ import { Address } from './address.entity';
 import { Like, Repository } from 'typeorm';
 import { ZoneService } from '../zone/zone.service';
 import { CreateAddressDto } from './dtos/create-address.dto';
+import * as XLSX from 'xlsx';
 
 @Injectable()
 export class AddressService {
@@ -65,6 +66,39 @@ export class AddressService {
     }
 
     return await this.repo.save(address);
+  }
+
+  async importAddressesFromExcel(file: Express.Multer.File): Promise<void> {
+    // Load the workbook from the buffer
+    const workbook = XLSX.read(file.buffer, { type: 'buffer' });
+    const sheetName = workbook.SheetNames[0];
+    const sheet = workbook.Sheets[sheetName];
+    const data = XLSX.utils.sheet_to_json(sheet);
+
+    // Process each row in the excel
+    for (const row of data) {
+      //console.log('row', row);
+      const code = row['CODIGO'];
+      const addressType = row['TIPO'];
+      const addressName = row['NOMBRE VIA'];
+      const zoneName = row['ZONA BASICA'];
+
+      // Find the zone by name
+      const zone = await this.zoneService.getByZoneName(zoneName);
+      const address = this.repo.create({
+        addressName,
+        zone,
+      });
+      if (code) {
+        address.code = code;
+      }
+
+      if (addressType) {
+        address.addressType = addressType;
+      }
+
+      await this.repo.save(address);
+    }
   }
 
   async delete(addressId: number): Promise<Address> {
