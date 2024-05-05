@@ -19,6 +19,8 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { WhatsappService } from './shared/whatsapp.service';
 import { DataSourceOptionsService } from '../datasourceoptions.service';
 import { DatabaseModule } from '../database.module';
+import { VacationDayModule } from './vacation-day/vacation-day.module';
+import { HolidayModule } from './holiday/holiday.module';
 
 @Module({
   imports: [
@@ -48,6 +50,8 @@ import { DatabaseModule } from '../database.module';
     AppointmentModule,
     AddressModule,
     FranjaModule,
+    VacationDayModule,
+    HolidayModule,
   ],
   controllers: [AppController],
   providers: [

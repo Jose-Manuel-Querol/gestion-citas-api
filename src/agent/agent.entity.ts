@@ -10,6 +10,7 @@ import {
 import { Zone } from '../zone/zone.entity';
 import { AppointmentTypeAgent } from '../appointment-type-agent/appointment-type-agent.entity';
 import { Account } from '../account/account.entity';
+import { VacationDay } from '../vacation-day/vacation-day.entity';
 
 @Entity()
 export class Agent {
@@ -81,6 +82,12 @@ export class Agent {
     },
   )
   appointmentTypeAgents: AppointmentTypeAgent[];
+
+  @OneToMany(() => VacationDay, (vacationDay) => vacationDay.agent, {
+    cascade: true,
+    onDelete: 'SET NULL',
+  })
+  vacationDays: VacationDay[];
 
   @OneToOne(() => Account, (account) => account.agent, {
     onDelete: 'SET NULL',
