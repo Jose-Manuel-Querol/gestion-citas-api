@@ -20,10 +20,10 @@ async function bootstrap() {
       'Esta documentación contendrá toda la información que necesitan para utilizar los endpoints de la  API Pública',
     )
     .setVersion('1.0')
-    .addBearerAuth(
+    /*.addBearerAuth(
       { type: 'http', scheme: 'bearer', bearerFormat: 'Token' },
       'apiToken',
-    )
+    )*/
     .build();
   const document = SwaggerModule.createDocument(app, config, {
     deepScanRoutes: true,

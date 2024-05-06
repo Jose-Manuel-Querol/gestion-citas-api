@@ -38,7 +38,7 @@ export class AddressController {
     description: 'Obtiene todas las direcciones',
     type: [AddressExampleDto],
   })
-  @UseGuards(ApiGuard)
+  //@UseGuards(ApiGuard)
   @Get('secure/get-all')
   async getAllAddressPublicApi(): Promise<Address[]> {
     return await this.addressService.getAll();
@@ -54,7 +54,7 @@ export class AddressController {
       'Obtener todas las direcciones completas, buscando por el nombre de la dirección',
     type: [CompleteAddressExampleDto],
   })
-  @UseGuards(ApiGuard)
+  //@UseGuards(ApiGuard)
   @Get('secure/by-address-name')
   async getAllAddressByAddressNamePublicApi(
     @Query('addressName') addressName: string,

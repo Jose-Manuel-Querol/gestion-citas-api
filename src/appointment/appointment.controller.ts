@@ -42,7 +42,7 @@ export class AppointmentController {
     description: 'Obtener todas las citas disponibles',
     type: [AvailableDatesExampleDto],
   })
-  @UseGuards(ApiGuard)
+  //@UseGuards(ApiGuard)
   @Get('secure/available-dates')
   async getAllAvailableAppointmentsPublicApi(
     @Query('appointmentTypeId') appointmentTypeId: string,
@@ -61,7 +61,7 @@ export class AppointmentController {
     description: 'Crear una Cita',
     type: AppointmentExampleDto,
   })
-  @UseGuards(ApiGuard)
+  //@UseGuards(ApiGuard)
   @Post('secure/create')
   async createAppointmentPublicApi(
     @Body() body: CreateAppointmentDto,
@@ -175,7 +175,7 @@ export class AppointmentController {
     description: 'Obtener una cita por su ID',
     type: AppointmentExampleDto,
   })
-  @UseGuards(ApiGuard)
+  //@UseGuards(ApiGuard)
   @Get('/secure/:id')
   async getAppointmentByIdPublicApi(
     @Param('id') appointmentId: string,
@@ -271,7 +271,7 @@ export class AppointmentController {
     description: 'Cancelar una cita',
     type: AppointmentExampleDto,
   })
-  @UseGuards(ApiGuard)
+  //@UseGuards(ApiGuard)
   @Get('secure/cancel-one/:id')
   async cancelOneAppointmentPublicApi(
     @Param('id') appointmentId: string,
