@@ -1,4 +1,4 @@
-/*import { DBOptions } from './db.datasourceoptions';
+import { DBOptions } from './db.datasourceoptions';
 import { DataSourceOptions, DataSource } from 'typeorm';
 
 const dsOptions: DataSourceOptions = <DataSourceOptions>{};
@@ -15,8 +15,8 @@ _AppDataSource
     console.error('Error durante la inicialización de la fuente de datos', err);
   });
 
-export const AppDataSource = _AppDataSource;*/
-import { NestFactory } from '@nestjs/core';
+export const AppDataSource = _AppDataSource;
+/*import { NestFactory } from '@nestjs/core';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { AppModule } from './src/app.module';
 import { DataSourceOptionsService } from './datasourceoptions.service';
@@ -42,4 +42,4 @@ async function initializeDataSource() {
     });
 }
 
-initializeDataSource();
+initializeDataSource();*/
