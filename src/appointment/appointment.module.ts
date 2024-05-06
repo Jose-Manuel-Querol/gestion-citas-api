@@ -9,6 +9,8 @@ import { LocationModule } from '../location/location.module';
 import { AppointmentTypeModule } from '../appointment-type/appointment-type.module';
 import { WhatsappService } from '../shared/whatsapp.service';
 import { AccountModule } from '../account/account.module';
+import { HolidayModule } from '../holiday/holiday.module';
+import { VacationDayModule } from '../vacation-day/vacation-day.module';
 
 @Module({
   imports: [
@@ -18,6 +20,8 @@ import { AccountModule } from '../account/account.module';
     LocationModule,
     AppointmentTypeModule,
     AccountModule,
+    HolidayModule,
+    VacationDayModule,
   ],
   controllers: [AppointmentController],
   providers: [AppointmentService, WhatsappService],

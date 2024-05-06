@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { VacationDay } from './vacation-day.entity';
-import { Repository } from 'typeorm';
+import { MoreThanOrEqual, Repository } from 'typeorm';
 import { CreateManyVacationDays } from './dtos/create-many-vacation-days.dto';
 import { AgentService } from '../agent/agent.service';
 
@@ -14,6 +14,18 @@ export class VacationDayService {
 
   async getAllVacationDayByAgent(agentId: number): Promise<VacationDay[]> {
     return await this.repo.find({ where: { agent: { agentId } } });
+  }
+
+  async getAllVacationDayByAgentAndAvailable(
+    agentId: number,
+    currentDate: string,
+  ): Promise<VacationDay[]> {
+    return await this.repo.find({
+      where: {
+        agent: { agentId },
+        vacationDayDate: MoreThanOrEqual(currentDate),
+      },
+    });
   }
 
   async getOneByDate(vacationDayDate: string): Promise<VacationDay> {
@@ -32,9 +44,7 @@ export class VacationDayService {
       (vacationDay) => vacationDay.vacationDayDate,
     );
     const vacationDaysToDelete = currentVacationDayDates.filter(
-      (vacationDay) => {
-        !createDto.vacationDayDates.includes(vacationDay);
-      },
+      (vacationDay) => !createDto.vacationDayDates.includes(vacationDay),
     );
 
     if (vacationDaysToDelete.length > 0) {

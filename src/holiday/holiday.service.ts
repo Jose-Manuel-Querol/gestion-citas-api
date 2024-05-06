@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Holiday } from './holiday.entity';
-import { Repository } from 'typeorm';
+import { MoreThanOrEqual, Repository } from 'typeorm';
 import { CreateManyHoliday } from './dtos/create-many-holidays.dto';
 
 @Injectable()
@@ -10,6 +10,12 @@ export class HolidayService {
 
   async getAllHoliday(): Promise<Holiday[]> {
     return await this.repo.find();
+  }
+
+  async getAllHolidayAvailable(currentDate: string): Promise<Holiday[]> {
+    return await this.repo.find({
+      where: { holidayDate: MoreThanOrEqual(currentDate) },
+    });
   }
 
   async getOneByDate(holidayDate: string): Promise<Holiday> {
@@ -24,9 +30,13 @@ export class HolidayService {
     const currentHolidayDates = currentHolidays.map(
       (holiday) => holiday.holidayDate,
     );
-    const holidaysToDelete = currentHolidayDates.filter((holidayDate) => {
-      !createDto.holidayDates.includes(holidayDate);
-    });
+    console.log('currentHolidayDates', currentHolidayDates);
+    const newHolidayDates = createDto.holidayDates;
+    const holidaysToDelete = currentHolidayDates.filter(
+      (holidayDate) => !newHolidayDates.includes(holidayDate),
+    );
+
+    console.log('holidaysToDelete', holidaysToDelete);
 
     if (holidaysToDelete.length > 0) {
       for (let i = 0; i < holidaysToDelete.length; i++) {
@@ -48,6 +58,7 @@ export class HolidayService {
 
   async delete(holidayDate: string): Promise<Holiday> {
     const holiday = await this.getOneByDate(holidayDate);
+    console.log('holiday delete', holiday);
     return await this.repo.remove(holiday);
   }
 }

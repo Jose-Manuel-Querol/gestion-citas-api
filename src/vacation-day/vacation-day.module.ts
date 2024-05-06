@@ -9,5 +9,6 @@ import { AgentModule } from '../agent/agent.module';
   imports: [TypeOrmModule.forFeature([VacationDay]), AgentModule],
   controllers: [VacationDayController],
   providers: [VacationDayService],
+  exports: [VacationDayService],
 })
 export class VacationDayModule {}

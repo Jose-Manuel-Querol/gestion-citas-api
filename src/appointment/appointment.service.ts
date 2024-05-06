@@ -25,6 +25,8 @@ import { AppointmentTypeService } from '../appointment-type/appointment-type.ser
 //import * as PDFDocument from 'pdfkit';
 import PDFDocument from 'pdfkit-table';
 import { WhatsappService } from '../shared/whatsapp.service';
+import { VacationDayService } from '../vacation-day/vacation-day.service';
+import { HolidayService } from '../holiday/holiday.service';
 
 @Injectable()
 export class AppointmentService {
@@ -35,6 +37,8 @@ export class AppointmentService {
     private appointmentTypeService: AppointmentTypeService,
     private locationService: LocationService,
     private whatsappService: WhatsappService,
+    private vacationDayService: VacationDayService,
+    private holidayService: HolidayService,
   ) {}
 
   async getAll(): Promise<Appointment[]> {
@@ -321,6 +325,74 @@ export class AppointmentService {
       appointmentTypeId,
     );
 
+    // Fetch all relevant holidays and vacation days
+    const todayISO = new Date().toISOString().split('T')[0];
+    const holidays = await this.holidayService.getAllHolidayAvailable(todayISO);
+    const holidayDates = new Set(
+      holidays.map((holiday) => holiday.holidayDate.split('T')[0]),
+    );
+
+    // Temporary dictionary to track unique dates and filter out holidays
+    const uniqueDates = new Map();
+
+    // Step 2: Calculate available time slots for each day
+    const rawAvailability = await Promise.all(
+      targetDays.map(async (day) => {
+        const date = this.getDateForDayName(day.dayName);
+        const dateString = date.toISOString().split('T')[0];
+
+        // Skip days that are holidays
+        if (holidayDates.has(dateString)) {
+          return null;
+        }
+
+        // Check if any agent is on vacation on this date
+        const agentVacationDays =
+          await this.vacationDayService.getAllVacationDayByAgentAndAvailable(
+            day.appointmentTypeAgent.agent.agentId,
+            todayISO,
+          );
+        const vacationDates = new Set(
+          agentVacationDays.map(
+            (vacation) => vacation.vacationDayDate.split('T')[0],
+          ),
+        );
+        if (vacationDates.has(dateString)) {
+          return null;
+        }
+
+        const availableSlotsAndDate = await this.calculateAvailableSlotsForDay(
+          day,
+          appointmentTypeId,
+        );
+
+        const location = await this.locationService.getByZone(
+          day.appointmentTypeAgent.agent.zone.zoneId,
+        );
+        return { ...availableSlotsAndDate, date: dateString, location };
+      }),
+    );
+
+    // Step 3: Filter out duplicates by date and ensure only days with available slots are included
+    const availability = rawAvailability.filter((entry) => {
+      if (!entry) return false;
+      const dateKey = entry.date;
+      if (uniqueDates.has(dateKey)) {
+        return false;
+      }
+      uniqueDates.set(dateKey, true);
+      return entry.availableSlots.length > 0;
+    });
+
+    return availability;
+  }
+
+  /*async findAvailableAppointments(appointmentTypeId: number) {
+    // Step 1: Filter days and agents
+    const targetDays = await this.dayService.filterDaysAndAgents(
+      appointmentTypeId,
+    );
+
     const uniqueDates = new Map();
 
     // Step 2: Calculate available time slots for each day
@@ -350,7 +422,7 @@ export class AppointmentService {
     });
 
     return availability;
-  }
+  }*/
 
   private getDateForDayName(dayName: string, additionalWeeks = 0): Date {
     const today = new Date();

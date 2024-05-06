@@ -8,5 +8,6 @@ import { Holiday } from './holiday.entity';
   imports: [TypeOrmModule.forFeature([Holiday])],
   controllers: [HolidayController],
   providers: [HolidayService],
+  exports: [HolidayService],
 })
 export class HolidayModule {}
