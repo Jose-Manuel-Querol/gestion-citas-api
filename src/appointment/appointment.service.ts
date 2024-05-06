@@ -319,7 +319,7 @@ export class AppointmentService {
     return appointment;
   }
 
-  async findAvailableAppointments(appointmentTypeId: number) {
+  /*async findAvailableAppointments(appointmentTypeId: number) {
     // Step 1: Filter days and agents
     const targetDays = await this.dayService.filterDaysAndAgents(
       appointmentTypeId,
@@ -328,6 +328,10 @@ export class AppointmentService {
     // Fetch all relevant holidays and vacation days
     const todayISO = new Date().toISOString().split('T')[0];
     const holidays = await this.holidayService.getAllHolidayAvailable(todayISO);
+    console.log(
+      'typeof holidays[0].holidayDate',
+      typeof holidays[0].holidayDate,
+    );
     const holidayDates = new Set(
       holidays.map((holiday) => holiday.holidayDate.split('T')[0]),
     );
@@ -385,9 +389,9 @@ export class AppointmentService {
     });
 
     return availability;
-  }
+  }*/
 
-  /*async findAvailableAppointments(appointmentTypeId: number) {
+  async findAvailableAppointments(appointmentTypeId: number) {
     // Step 1: Filter days and agents
     const targetDays = await this.dayService.filterDaysAndAgents(
       appointmentTypeId,
@@ -422,7 +426,7 @@ export class AppointmentService {
     });
 
     return availability;
-  }*/
+  }
 
   private getDateForDayName(dayName: string, additionalWeeks = 0): Date {
     const today = new Date();
