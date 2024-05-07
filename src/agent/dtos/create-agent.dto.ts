@@ -1,5 +1,6 @@
 import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 import { CreateManyAppointmentTypeAgent } from '../../appointment-type-agent/dtos/create-many-appointment-type-agent.dto';
+import { CreateManyVacationDays } from '../../vacation-day/dtos/create-many-vacation-days.dto';
 export class CreateAgentDto {
   @IsNotEmpty()
   @IsString()
@@ -47,4 +48,7 @@ export class CreateAgentDto {
 
   @IsNotEmpty()
   appointmentTypeAgents: CreateManyAppointmentTypeAgent;
+
+  @IsNotEmpty()
+  vacationDays: CreateManyVacationDays;
 }

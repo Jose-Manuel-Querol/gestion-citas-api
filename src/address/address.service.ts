@@ -14,11 +14,14 @@ export class AddressService {
   ) {}
 
   async getAll(): Promise<Address[]> {
-    return await this.repo.find();
+    return await this.repo.find({ relations: { zone: true } });
   }
 
   async getById(addressId: number): Promise<Address> {
-    const address = await this.repo.findOne({ where: { addressId } });
+    const address = await this.repo.findOne({
+      where: { addressId },
+      relations: { zone: true },
+    });
     if (!address) {
       throw new NotFoundException('La dirección no fue encontrada');
     }

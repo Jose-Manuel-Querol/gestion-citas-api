@@ -7,6 +7,7 @@ import { ZoneModule } from '../zone/zone.module';
 import { AppointmentTypeAgentModule } from '../appointment-type-agent/appointment-type-agent.module';
 import { AgentSchedulerService } from './agent.scheduler.service';
 import { AccountModule } from '../account/account.module';
+import { VacationDayModule } from '../vacation-day/vacation-day.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { AccountModule } from '../account/account.module';
     ZoneModule,
     AppointmentTypeAgentModule,
     forwardRef(() => AccountModule),
+    VacationDayModule,
   ],
   controllers: [AgentController],
   providers: [AgentService, AgentSchedulerService],

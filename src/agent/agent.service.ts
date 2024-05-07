@@ -16,6 +16,7 @@ import { AppointmentTypeAgentService } from '../appointment-type-agent/appointme
 import { ScheduleActivationAgentDto } from './dtos/scheadule-activation-agent.dto';
 import { AccountService } from '../account/account.service';
 import { UpdateAccountDto } from '../account/dtos/update-account.dto';
+import { VacationDayService } from '../vacation-day/vacation-day.service';
 
 @Injectable()
 export class AgentService {
@@ -23,6 +24,7 @@ export class AgentService {
     @InjectRepository(Agent) private repo: Repository<Agent>,
     private zoneService: ZoneService,
     private appointmentTypeAgentService: AppointmentTypeAgentService,
+    private vacationDayService: VacationDayService,
     @Inject(forwardRef(() => AccountService))
     private accountService: AccountService,
   ) {}
@@ -100,6 +102,7 @@ export class AgentService {
           appointmentType: true,
           days: { franjas: true },
         },
+        vacationDays: true,
       },
     });
 
@@ -129,6 +132,7 @@ export class AgentService {
           appointmentType: true,
           days: { franjas: true },
         },
+        vacationDays: true,
       },
     });
     if (!agent) {
@@ -187,6 +191,10 @@ export class AgentService {
     const createdAgent = await this.repo.save(agent);
     await this.appointmentTypeAgentService.createMany(
       createDto.appointmentTypeAgents,
+      createdAgent,
+    );
+    await this.vacationDayService.createMany(
+      createDto.vacationDays,
       createdAgent,
     );
     return await this.getById(createdAgent.agentId);

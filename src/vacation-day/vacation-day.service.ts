@@ -7,14 +7,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { VacationDay } from './vacation-day.entity';
 import { MoreThanOrEqual, Repository } from 'typeorm';
 import { CreateManyVacationDays } from './dtos/create-many-vacation-days.dto';
-import { AgentService } from '../agent/agent.service';
 import { UpdateVacationDto } from './dtos/update-vacation.dto';
+import { Agent } from '../agent/agent.entity';
 
 @Injectable()
 export class VacationDayService {
   constructor(
     @InjectRepository(VacationDay) private repo: Repository<VacationDay>,
-    private agentService: AgentService,
   ) {}
 
   async getAllVacationDayByAgent(agentId: number): Promise<VacationDay[]> {
@@ -59,8 +58,10 @@ export class VacationDayService {
     return vacationDay;
   }
 
-  async createMany(createDto: CreateManyVacationDays): Promise<VacationDay[]> {
-    const agent = await this.agentService.getById(createDto.agentId);
+  async createMany(
+    createDto: CreateManyVacationDays,
+    agent: Agent,
+  ): Promise<VacationDay[]> {
     const vacationDays: VacationDay[] = [];
     /*const currentVacationDays = await this.getAllVacationDayByAgent(
       createDto.agentId,
@@ -92,7 +93,7 @@ export class VacationDayService {
     }
 
     await this.repo.save(vacationDays);
-    return await this.getAllVacationDayByAgent(createDto.agentId);
+    return await this.getAllVacationDayByAgent(agent.agentId);
   }
 
   async update(
@@ -100,9 +101,7 @@ export class VacationDayService {
     updateDto: UpdateVacationDto,
   ): Promise<VacationDay> {
     const vacationDay = await this.getOneById(vacationDayId);
-    const agent = await this.agentService.getById(updateDto.agentId);
     vacationDay.vacationDayDate = updateDto.vacationDayDate;
-    vacationDay.agent = agent;
     return await this.repo.save(vacationDay);
   }
 
