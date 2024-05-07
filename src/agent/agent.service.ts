@@ -173,10 +173,8 @@ export class AgentService {
       firstName: createDto.firstName,
       lastName: createDto.lastName,
       phoneNumber: createDto.phoneNumber,
-      vacationEnd: createDto.vacationEnd,
-      vacationStart: createDto.vacationStart,
-      zone,
       dni: createDto.dni,
+      zone,
     });
 
     let baseSlug = generateSlug(createDto.firstName + ' ' + createDto.lastName);
@@ -242,18 +240,6 @@ export class AgentService {
 
     if (updateDto.phoneNumber) {
       agent.phoneNumber = updateDto.phoneNumber;
-    }
-
-    if (updateDto.vacationEnd) {
-      agent.vacationEnd = updateDto.vacationEnd;
-    }
-
-    if (updateDto.vacationStart) {
-      agent.vacationStart = updateDto.vacationStart;
-    }
-
-    if (updateDto.vacationStart) {
-      agent.vacationStart = updateDto.vacationStart;
     }
 
     if (updateDto.dni) {

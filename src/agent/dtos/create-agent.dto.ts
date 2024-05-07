@@ -35,14 +35,6 @@ export class CreateAgentDto {
   addressNro: string;
 
   @IsNotEmpty()
-  @IsString()
-  vacationStart: string;
-
-  @IsNotEmpty()
-  @IsString()
-  vacationEnd: string;
-
-  @IsNotEmpty()
   @IsNumber()
   zoneId: number;
 

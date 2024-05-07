@@ -34,14 +34,6 @@ export class UpdateAgentDto {
   addressNro?: string;
 
   @IsOptional()
-  @IsString()
-  vacationStart?: string;
-
-  @IsOptional()
-  @IsString()
-  vacationEnd?: string;
-
-  @IsOptional()
   @IsNumber()
   zoneId?: number;
 
