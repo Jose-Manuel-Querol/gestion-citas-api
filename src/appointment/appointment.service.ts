@@ -20,7 +20,7 @@ import {
   getDayAfterTomorrow,
 } from '../shared/shared-functions';
 import { Day } from '../day/day.entity';
-import * as moment from 'moment';
+//import * as moment from 'moment';
 import { AppointmentTypeService } from '../appointment-type/appointment-type.service';
 //import * as PDFDocument from 'pdfkit';
 import PDFDocument from 'pdfkit-table';
@@ -319,7 +319,7 @@ export class AppointmentService {
     return appointment;
   }
 
-  async findAvailableAppointments(appointmentTypeId: number) {
+  /*async findAvailableAppointments(appointmentTypeId: number) {
     // Step 1: Filter days and agents
     const targetDays = await this.dayService.filterDaysAndAgents(
       appointmentTypeId,
@@ -367,6 +367,8 @@ export class AppointmentService {
           return null;
         }
 
+        if (date < new Date()) return null;
+
         const availableSlotsAndDate = await this.calculateAvailableSlotsForDay(
           day,
           appointmentTypeId,
@@ -391,62 +393,158 @@ export class AppointmentService {
     });
 
     return availability;
+  }*/
+
+  async findAvailableAppointments(appointmentTypeId: number) {
+    const targetDays = await this.dayService.filterDaysAndAgents(
+      appointmentTypeId,
+    );
+
+    const todayISO = new Date().toISOString().split('T')[0];
+    const holidays = await this.holidayService.getAllHolidayAvailable(todayISO);
+    const holidayDates = new Set(
+      holidays.map(
+        (holiday) =>
+          (holiday.holidayDate as unknown as Date).toISOString().split('T')[0],
+      ),
+    );
+
+    const uniqueDates = new Map();
+
+    const rawAvailability = await Promise.all(
+      targetDays.map(async (day) => {
+        // This now correctly cycles through potential days up to a week out to find the correct next occurrences
+        for (let i = 0; i < 28; i++) {
+          // Look up to 4 weeks ahead
+          const date = this.getDateForDayName(day.dayName, i);
+          const dateString = date.toISOString().split('T')[0];
+
+          if (holidayDates.has(dateString) || date < new Date()) continue; // Skip holidays and past days
+
+          const agentVacationDays =
+            await this.vacationDayService.getAllVacationDayByAgentAndAvailable(
+              day.appointmentTypeAgent.agent.agentId,
+              todayISO,
+            );
+          const vacationDates = new Set(
+            agentVacationDays.map(
+              (vacation) =>
+                (vacation.vacationDayDate as unknown as Date)
+                  .toISOString()
+                  .split('T')[0],
+            ),
+          );
+
+          if (vacationDates.has(dateString)) continue; // Skip vacation days
+
+          const availableSlotsAndDate =
+            await this.calculateAvailableSlotsForDay(day, appointmentTypeId);
+          if (!availableSlotsAndDate.availableSlots.length) continue; // Skip days with no available slots
+
+          const location = await this.locationService.getByZone(
+            day.appointmentTypeAgent.agent.zone.zoneId,
+          );
+          if (!uniqueDates.has(dateString)) {
+            uniqueDates.set(dateString, true);
+            return { ...availableSlotsAndDate, date: dateString, location };
+          }
+        }
+      }),
+    );
+
+    // Filter out null entries
+    const filteredResults = rawAvailability.filter((entry) => entry);
+
+    // Sort results by date
+    filteredResults.sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+    );
+
+    return filteredResults;
   }
 
-  private getDateForDayName(dayName: string, additionalWeeks = 0): Date {
+  private getDateForDayName(dayName: string, offset = 0): Date {
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Normalize time part
-    const date = new Date(today);
-    let count = 0;
+    today.setHours(0, 0, 0, 0); // Normalize time to the start of today
 
-    // Iterate more than 7 days to find multiple occurrences
-    while (count < 7 + 7 * additionalWeeks) {
-      if (
-        this.dayService.mapDayEnglishToSpanish(
-          date.toLocaleDateString('en-US', { weekday: 'long' }),
-        ) === dayName
-      ) {
-        if (additionalWeeks === 0) {
-          return date;
-        }
-        additionalWeeks--;
+    const checkDate = new Date(today);
+    checkDate.setDate(today.getDate() + offset); // Start checking from today + offset days
+
+    let found = 0;
+    const limit = 365; // Avoid infinite loops, limit to a year
+
+    while (found < limit) {
+      const currentDayName = checkDate
+        .toLocaleDateString('es-ES', {
+          timeZone: 'Europe/Madrid',
+          weekday: 'long',
+        })
+        .toLowerCase();
+
+      if (currentDayName === dayName.toLowerCase()) {
+        return new Date(checkDate);
       }
-      date.setDate(date.getDate() + 1);
-      count++;
+
+      checkDate.setDate(checkDate.getDate() + 1);
+      found++;
     }
-    return date; // fallback, shouldn't happen
+
+    throw new Error(
+      'Unable to find the next occurrence of the day, which suggests an error in day name or logic.',
+    );
   }
 
   private async calculateAvailableSlotsForDay(
     day: Day,
     appointmentTypeId: number,
   ): Promise<{ day: Day; availableSlots: string[] }> {
-    // Fetch appointment type to get the duration for appointments
     const appointmentType = await this.appointmentTypeService.getById(
       appointmentTypeId,
     );
-    if (!appointmentType) throw new Error('El tipo de cita no fue encontrado');
+    if (!appointmentType) throw new Error('Appointment type not found.');
 
-    const duration = parseInt(appointmentType.duration); // Convert duration to an integer, assuming it's stored in minutes
+    const duration = parseInt(appointmentType.duration);
     let allSlots = [];
 
-    // Process each Franja to generate slots
+    // Get current time in Spain
+    const now = new Date().toLocaleString('en-US', {
+      timeZone: 'Europe/Madrid',
+    });
+    const currentTime = new Date(now);
+
     for (const franja of day.franjas) {
       const slots = [];
-      let currentTimeSlotStart = moment(franja.startingHour, 'HH:mm');
-      const endTime = moment(franja.endingHour, 'HH:mm');
+      const franjaStartTime = new Date(
+        `${new Date().toISOString().split('T')[0]}T${franja.startingHour}:00`,
+      ).toLocaleString('en-US', { timeZone: 'Europe/Madrid' });
+      const franjaEndTime = new Date(
+        `${new Date().toISOString().split('T')[0]}T${franja.endingHour}:00`,
+      ).toLocaleString('en-US', { timeZone: 'Europe/Madrid' });
+      let currentTimeSlotStart = new Date(franjaStartTime);
+      const endTime = new Date(franjaEndTime);
 
-      while (currentTimeSlotStart.add(duration, 'minutes').isBefore(endTime)) {
-        const slotEnd = moment(currentTimeSlotStart).add(duration, 'minutes');
+      // If it's the current day and time has passed, adjust start time
+      if (
+        currentTimeSlotStart.getDate() === currentTime.getDate() &&
+        currentTimeSlotStart < currentTime
+      ) {
+        currentTimeSlotStart = new Date(
+          currentTime.getTime() + duration * 60000,
+        );
+      }
+
+      while (
+        new Date(currentTimeSlotStart.getTime() + duration * 60000) <= endTime
+      ) {
+        const slotEnd = new Date(
+          currentTimeSlotStart.getTime() + duration * 60000,
+        );
         slots.push(
-          `${currentTimeSlotStart.format('HH:mm')} to ${slotEnd.format(
-            'HH:mm',
-          )}`,
+          `${currentTimeSlotStart.getHours()}:${currentTimeSlotStart.getMinutes()} to ${slotEnd.getHours()}:${slotEnd.getMinutes()}`,
         );
         currentTimeSlotStart = slotEnd;
       }
 
-      // Fetch appointments for the day and this specific franja to check which slots are already booked
       const appointments = await this.repo.find({
         where: {
           day: { dayId: day.dayId },
@@ -457,9 +555,7 @@ export class AppointmentService {
         },
       });
 
-      // Map appointments to their starting hours for comparison
       const bookedTimes = appointments.map((a) => a.startingHour);
-      // Filter out slots that have been booked
       const availableSlots = slots.filter(
         (slot) => !bookedTimes.includes(slot.split(' to ')[0]),
       );

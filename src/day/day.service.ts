@@ -36,24 +36,6 @@ export class DayService {
   }
 
   async filterDaysAndAgents(appointmentTypeId: number): Promise<Day[]> {
-    const today = new Date();
-    const validDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
-    const dayNames = [];
-    let count = 0;
-
-    // Use a loop to find the next 4 valid weekdays based on current day
-    while (dayNames.length < 4) {
-      const tempDate = new Date(today);
-      tempDate.setDate(today.getDate() + count);
-      const dayOfWeek = tempDate.toLocaleString('en-US', { weekday: 'long' });
-      if (validDays.includes(dayOfWeek)) {
-        dayNames.push(this.mapDayEnglishToSpanish(dayOfWeek));
-      }
-      count++;
-    }
-
-    console.log('dayNames', dayNames);
-
     const query = this.repo
       .createQueryBuilder('day')
       .leftJoinAndSelect('day.appointmentTypeAgent', 'appointmentTypeAgent')
@@ -67,34 +49,10 @@ export class DayService {
       .where('appointmentType.appointmentTypeId = :appointmentTypeId', {
         appointmentTypeId,
       })
-      .andWhere('day.dayName IN (:...dayNames)', { dayNames })
-      .andWhere('agent.active = :active', {
-        active: true,
-      });
+      .andWhere('agent.active = :active', { active: true });
 
     const days = await query.getMany();
-    /*console.log(
-      'Filtered Agents and Days: ',
-      days.map((day) => ({
-        dayId: day.dayId,
-        dayName: day.dayName,
-        agentId: day.appointmentTypeAgent.agent.agentId,
-        agentName: day.appointmentTypeAgent.agent.firstName,
-      })),
-    );*/
     return days;
-  }
-
-  // Helper function to map English weekday names to Spanish
-  mapDayEnglishToSpanish(dayName: string): string {
-    const dayNameMap = {
-      Monday: 'Lunes',
-      Tuesday: 'Martes',
-      Wednesday: 'Miércoles',
-      Thursday: 'Jueves',
-      Friday: 'Viernes',
-    };
-    return dayNameMap[dayName];
   }
 
   async create(
