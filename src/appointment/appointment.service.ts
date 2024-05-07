@@ -319,82 +319,6 @@ export class AppointmentService {
     return appointment;
   }
 
-  /*async findAvailableAppointments(appointmentTypeId: number) {
-    // Step 1: Filter days and agents
-    const targetDays = await this.dayService.filterDaysAndAgents(
-      appointmentTypeId,
-    );
-
-    // Fetch all relevant holidays and vacation days
-    const todayISO = new Date().toISOString().split('T')[0];
-    const holidays = await this.holidayService.getAllHolidayAvailable(todayISO);
-    const holidayDates = new Set(
-      holidays.map(
-        (holiday) =>
-          (holiday.holidayDate as unknown as Date).toISOString().split('T')[0],
-      ),
-    );
-
-    // Temporary dictionary to track unique dates and filter out holidays
-    const uniqueDates = new Map();
-
-    // Step 2: Calculate available time slots for each day
-    const rawAvailability = await Promise.all(
-      targetDays.map(async (day) => {
-        const date = this.getDateForDayName(day.dayName);
-        const dateString = date.toISOString().split('T')[0];
-
-        // Skip days that are holidays
-        if (holidayDates.has(dateString)) {
-          return null;
-        }
-
-        // Check if any agent is on vacation on this date
-        const agentVacationDays =
-          await this.vacationDayService.getAllVacationDayByAgentAndAvailable(
-            day.appointmentTypeAgent.agent.agentId,
-            todayISO,
-          );
-        const vacationDates = new Set(
-          agentVacationDays.map(
-            (vacation) =>
-              (vacation.vacationDayDate as unknown as Date)
-                .toISOString()
-                .split('T')[0],
-          ),
-        );
-        if (vacationDates.has(dateString)) {
-          return null;
-        }
-
-        if (date < new Date()) return null;
-
-        const availableSlotsAndDate = await this.calculateAvailableSlotsForDay(
-          day,
-          appointmentTypeId,
-        );
-
-        const location = await this.locationService.getByZone(
-          day.appointmentTypeAgent.agent.zone.zoneId,
-        );
-        return { ...availableSlotsAndDate, date: dateString, location };
-      }),
-    );
-
-    // Step 3: Filter out duplicates by date and ensure only days with available slots are included
-    const availability = rawAvailability.filter((entry) => {
-      if (!entry) return false;
-      const dateKey = entry.date;
-      if (uniqueDates.has(dateKey)) {
-        return false;
-      }
-      uniqueDates.set(dateKey, true);
-      return entry.availableSlots.length > 0;
-    });
-
-    return availability;
-  }*/
-
   async findAvailableAppointments(appointmentTypeId: number) {
     const targetDays = await this.dayService.filterDaysAndAgents(
       appointmentTypeId,
@@ -589,7 +513,7 @@ export class AppointmentService {
     });
 
     const createdAppointment = await this.repo.save(appointment);
-    await this.whatsappService.sendMessage({
+    /*await this.whatsappService.sendMessage({
       codigoBot: 'd325d6747956f6a6f56587232b81712e',
       codigoPlantilla: 'recordatorio_citas',
       codigoPostalTel: '+34',
@@ -603,7 +527,7 @@ export class AppointmentService {
         3: createdAppointment.location.locationName,
         4: createdAppointment.location.fullAddress,
       },
-    });
+    });*/
     return createdAppointment;
   }
 
@@ -711,6 +635,48 @@ export class AppointmentService {
       });
     }
     return updatedAppointments;
+  }
+
+  async getAppointmentsInTwoDays(): Promise<Appointment[]> {
+    // Calculate the date that is two days after the current day
+    const currentDate = new Date();
+    currentDate.setDate(currentDate.getDate() + 2); // Add two days to the current date
+
+    // Format the date to start at the beginning of the day in ISO format
+    const targetDate = new Date(currentDate.setHours(0, 0, 0, 0)).toISOString();
+
+    // Find all appointments where dayDate is exactly two days from now
+    return this.repo.find({
+      where: {
+        dayDate: targetDate,
+      },
+      relations: {
+        appointmentTypeAgent: { appointmentType: true, agent: true },
+        location: true,
+        day: true,
+      },
+    });
+  }
+
+  async sendReminder() {
+    const appointments = await this.getAppointmentsInTwoDays();
+    for (let i = 0; i < appointments.length; i++) {
+      await this.whatsappService.sendMessage({
+        codigoBot: 'd325d6747956f6a6f56587232b81712e',
+        codigoPlantilla: 'recordatorio_citas',
+        codigoPostalTel: '+34',
+        numeroReceptor: `34${appointments[i].clientPhoneNumber}`,
+        nombreReceptor: appointments[i].clientName,
+        fBotEncendido: true,
+        fMostrarMensajeEnChat: true,
+        parametros: {
+          1: `${appointments[i].day.dayName}`,
+          2: appointments[i].startingHour,
+          3: appointments[i].location.locationName,
+          4: appointments[i].location.fullAddress,
+        },
+      });
+    }
   }
 
   async cancelOne(appointmentId: number): Promise<Appointment> {

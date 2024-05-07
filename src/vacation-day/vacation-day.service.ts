@@ -85,15 +85,15 @@ export class VacationDayService {
       }
     }*/
     for (let i = 0; i < createDto.vacationDayDates.length; i++) {
-      const foundDate = await this.getAllVacationDayByAgentAndAvailable(
+      /*const foundDate = await this.getAllVacationDayByAgent(
         agent.agentId,
         createDto.vacationDayDates[i],
       );
       if (foundDate.length > 0) {
         throw new BadRequestException(
-          `Usted ya creó una día festivo con la fecha ${createDto.vacationDayDates[i]}`,
+          `Usted ya creó una día de vacación con la fecha ${createDto.vacationDayDates[i]}`,
         );
-      }
+      }*/
       const vacationDay = this.repo.create({
         vacationDayDate: createDto.vacationDayDates[i],
         agent,
@@ -126,15 +126,15 @@ export class VacationDayService {
     }*/
     const agent = await this.agentService.getById(createDto.agentId);
     for (let i = 0; i < createDto.vacationDayDates.length; i++) {
-      const foundDate = await this.getAllVacationDayByAgentAndAvailable(
+      /*const foundDate = await this.getAllVacationDayByAgentAndAvailable(
         agent.agentId,
         createDto.vacationDayDates[i],
       );
       if (foundDate.length > 0) {
         throw new BadRequestException(
-          `Usted ya creó una día festivo con la fecha ${createDto.vacationDayDates[i]}`,
+          `Usted ya creó una día de vacación con la fecha ${createDto.vacationDayDates[i]}`,
         );
-      }
+      }*/
       const vacationDay = this.repo.create({
         vacationDayDate: createDto.vacationDayDates[i],
         agent,
