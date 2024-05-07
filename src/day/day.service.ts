@@ -52,6 +52,8 @@ export class DayService {
       count++;
     }
 
+    console.log('dayNames', dayNames);
+
     const query = this.repo
       .createQueryBuilder('day')
       .leftJoinAndSelect('day.appointmentTypeAgent', 'appointmentTypeAgent')
@@ -66,14 +68,20 @@ export class DayService {
         appointmentTypeId,
       })
       .andWhere('day.dayName IN (:...dayNames)', { dayNames })
-      .andWhere('agent.vacation = :vacation', {
-        vacation: false,
-      })
       .andWhere('agent.active = :active', {
         active: true,
       });
 
     const days = await query.getMany();
+    /*console.log(
+      'Filtered Agents and Days: ',
+      days.map((day) => ({
+        dayId: day.dayId,
+        dayName: day.dayName,
+        agentId: day.appointmentTypeAgent.agent.agentId,
+        agentName: day.appointmentTypeAgent.agent.firstName,
+      })),
+    );*/
     return days;
   }
 

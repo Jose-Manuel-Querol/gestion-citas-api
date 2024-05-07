@@ -319,7 +319,7 @@ export class AppointmentService {
     return appointment;
   }
 
-  /*async findAvailableAppointments(appointmentTypeId: number) {
+  async findAvailableAppointments(appointmentTypeId: number) {
     // Step 1: Filter days and agents
     const targetDays = await this.dayService.filterDaysAndAgents(
       appointmentTypeId,
@@ -328,12 +328,11 @@ export class AppointmentService {
     // Fetch all relevant holidays and vacation days
     const todayISO = new Date().toISOString().split('T')[0];
     const holidays = await this.holidayService.getAllHolidayAvailable(todayISO);
-    console.log(
-      'typeof holidays[0].holidayDate',
-      typeof holidays[0].holidayDate,
-    );
     const holidayDates = new Set(
-      holidays.map((holiday) => holiday.holidayDate.split('T')[0]),
+      holidays.map(
+        (holiday) =>
+          (holiday.holidayDate as unknown as Date).toISOString().split('T')[0],
+      ),
     );
 
     // Temporary dictionary to track unique dates and filter out holidays
@@ -358,7 +357,10 @@ export class AppointmentService {
           );
         const vacationDates = new Set(
           agentVacationDays.map(
-            (vacation) => vacation.vacationDayDate.split('T')[0],
+            (vacation) =>
+              (vacation.vacationDayDate as unknown as Date)
+                .toISOString()
+                .split('T')[0],
           ),
         );
         if (vacationDates.has(dateString)) {
@@ -381,43 +383,6 @@ export class AppointmentService {
     const availability = rawAvailability.filter((entry) => {
       if (!entry) return false;
       const dateKey = entry.date;
-      if (uniqueDates.has(dateKey)) {
-        return false;
-      }
-      uniqueDates.set(dateKey, true);
-      return entry.availableSlots.length > 0;
-    });
-
-    return availability;
-  }*/
-
-  async findAvailableAppointments(appointmentTypeId: number) {
-    // Step 1: Filter days and agents
-    const targetDays = await this.dayService.filterDaysAndAgents(
-      appointmentTypeId,
-    );
-
-    const uniqueDates = new Map();
-
-    // Step 2: Calculate available time slots for each day
-    const rawAvailability = await Promise.all(
-      targetDays.map(async (day) => {
-        const availableSlotsAndDate = await this.calculateAvailableSlotsForDay(
-          day,
-          appointmentTypeId,
-        );
-        // Append the actual date to each day result
-        const date = this.getDateForDayName(day.dayName);
-        const location = await this.locationService.getByZone(
-          day.appointmentTypeAgent.agent.zone.zoneId,
-        );
-        return { ...availableSlotsAndDate, date: date.toISOString(), location };
-      }),
-    );
-
-    // Step 3: Filter out duplicates by date and ensure only days with available slots are included
-    const availability = rawAvailability.filter((entry) => {
-      const dateKey = entry.date.split('T')[0];
       if (uniqueDates.has(dateKey)) {
         return false;
       }
@@ -460,7 +425,7 @@ export class AppointmentService {
     const appointmentType = await this.appointmentTypeService.getById(
       appointmentTypeId,
     );
-    if (!appointmentType) throw new Error('Appointment type not found.');
+    if (!appointmentType) throw new Error('El tipo de cita no fue encontrado');
 
     const duration = parseInt(appointmentType.duration); // Convert duration to an integer, assuming it's stored in minutes
     let allSlots = [];
