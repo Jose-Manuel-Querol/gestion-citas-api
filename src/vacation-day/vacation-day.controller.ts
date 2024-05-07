@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  Post,
   Put,
   Query,
   UseGuards,
@@ -15,6 +16,7 @@ import { JwtAccountGuard } from '../account/account-auth/account-guards/account.
 import { RolesGuard } from '../account/account-auth/account-guards/roles.guard';
 import { Roles } from '../shared/roles.decorator';
 import { UpdateVacationDto } from './dtos/update-vacation.dto';
+import { CreateManyVacationDaysWithAgent } from './dtos/create-many-vacation-days-with-agent.dto';
 
 @Controller('vacation-day')
 export class VacationDayController {
@@ -30,6 +32,16 @@ export class VacationDayController {
     return await this.vacationDayService.getAllVacationDayByAgent(
       parseInt(agentId),
     );
+  }
+
+  @ApiExcludeEndpoint()
+  @UseGuards(JwtAccountGuard, RolesGuard)
+  @Roles('Admin')
+  @Post()
+  async createManyVacationDays(
+    @Body() body: CreateManyVacationDaysWithAgent,
+  ): Promise<VacationDay[]> {
+    return await this.vacationDayService.createNewMany(body);
   }
 
   @ApiExcludeEndpoint()

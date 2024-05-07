@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Address } from './address.entity';
-import { Like, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { ZoneService } from '../zone/zone.service';
 import { CreateAddressDto } from './dtos/create-address.dto';
 import * as XLSX from 'xlsx';

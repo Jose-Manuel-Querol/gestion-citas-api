@@ -15,7 +15,7 @@ import { VacationDayModule } from '../vacation-day/vacation-day.module';
     ZoneModule,
     AppointmentTypeAgentModule,
     forwardRef(() => AccountModule),
-    VacationDayModule,
+    forwardRef(() => VacationDayModule),
   ],
   controllers: [AgentController],
   providers: [AgentService, AgentSchedulerService],

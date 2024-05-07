@@ -24,9 +24,10 @@ export class AgentService {
     @InjectRepository(Agent) private repo: Repository<Agent>,
     private zoneService: ZoneService,
     private appointmentTypeAgentService: AppointmentTypeAgentService,
-    private vacationDayService: VacationDayService,
     @Inject(forwardRef(() => AccountService))
     private accountService: AccountService,
+    @Inject(forwardRef(() => VacationDayService))
+    private vacationDayService: VacationDayService,
   ) {}
 
   async getAll(): Promise<Agent[]> {
