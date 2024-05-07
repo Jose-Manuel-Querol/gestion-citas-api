@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   Post,
+  Put,
   Query,
   UploadedFile,
   UseGuards,
@@ -16,7 +17,6 @@ import { CreateAddressDto } from './dtos/create-address.dto';
 import { JwtAccountGuard } from '../account/account-auth/account-guards/account.jwt.guard';
 import { RolesGuard } from '../account/account-auth/account-guards/roles.guard';
 import { Roles } from '../shared/roles.decorator';
-import { ApiGuard } from '../account/account-auth/account-guards/api.guard';
 import {
   ApiTags,
   ApiOperation,
@@ -26,6 +26,7 @@ import {
 import { AddressExampleDto } from './dtos/address.example.dto';
 import { CompleteAddressExampleDto } from './dtos/complete-address.example.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { UpdateAddressDto } from './dtos/update-address.dto';
 
 @ApiTags('Direcciones')
 @Controller('address')
@@ -104,6 +105,17 @@ export class AddressController {
   @Post('create-one')
   async createOneAddress(@Body() body: CreateAddressDto): Promise<Address> {
     return await this.addressService.createOne(body);
+  }
+
+  @ApiExcludeEndpoint()
+  @UseGuards(JwtAccountGuard, RolesGuard)
+  @Roles('Admin')
+  @Put('/:id')
+  async updateOneAddress(
+    @Param('id') addressId: string,
+    @Body() body: UpdateAddressDto,
+  ): Promise<Address> {
+    return await this.addressService.update(parseInt(addressId), body);
   }
 
   @ApiExcludeEndpoint()

@@ -5,6 +5,7 @@ import { Like, Repository } from 'typeorm';
 import { ZoneService } from '../zone/zone.service';
 import { CreateAddressDto } from './dtos/create-address.dto';
 import * as XLSX from 'xlsx';
+import { UpdateAddressDto } from './dtos/update-address.dto';
 
 @Injectable()
 export class AddressService {
@@ -102,6 +103,19 @@ export class AddressService {
 
       await this.repo.save(address);
     }
+  }
+
+  async update(
+    addressId: number,
+    updateDto: UpdateAddressDto,
+  ): Promise<Address> {
+    const address = await this.getById(addressId);
+    const zone = await this.zoneService.getByZoneName(updateDto.zoneName);
+    address.zone = zone;
+    address.addressName = updateDto.addressName;
+    address.addressType = updateDto.addressType;
+    address.code = updateDto.code;
+    return await this.repo.save(address);
   }
 
   async delete(addressId: number): Promise<Address> {
