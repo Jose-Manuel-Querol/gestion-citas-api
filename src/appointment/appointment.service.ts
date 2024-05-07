@@ -409,58 +409,61 @@ export class AppointmentService {
       ),
     );
 
-    const uniqueDates = new Map();
+    const availabilityResults = [];
 
-    const rawAvailability = await Promise.all(
-      targetDays.map(async (day) => {
-        // This now correctly cycles through potential days up to a week out to find the correct next occurrences
-        for (let i = 0; i < 28; i++) {
-          // Look up to 4 weeks ahead
-          const date = this.getDateForDayName(day.dayName, i);
-          const dateString = date.toISOString().split('T')[0];
+    for (const day of targetDays) {
+      // Look up to 4 weeks ahead for each day type to find multiple valid occurrences
+      for (let week = 0; week < 4; week++) {
+        const date = this.getDateForDayName(day.dayName, week * 7);
+        const dateString = date.toISOString().split('T')[0];
 
-          if (holidayDates.has(dateString) || date < new Date()) continue; // Skip holidays and past days
+        if (date < new Date() || holidayDates.has(dateString)) continue; // Skip past days and holidays
 
-          const agentVacationDays =
-            await this.vacationDayService.getAllVacationDayByAgentAndAvailable(
-              day.appointmentTypeAgent.agent.agentId,
-              todayISO,
-            );
-          const vacationDates = new Set(
-            agentVacationDays.map(
-              (vacation) =>
-                (vacation.vacationDayDate as unknown as Date)
-                  .toISOString()
-                  .split('T')[0],
-            ),
+        const agentVacationDays =
+          await this.vacationDayService.getAllVacationDayByAgentAndAvailable(
+            day.appointmentTypeAgent.agent.agentId,
+            todayISO,
           );
+        const vacationDates = new Set(
+          agentVacationDays.map(
+            (vacation) =>
+              (vacation.vacationDayDate as unknown as Date)
+                .toISOString()
+                .split('T')[0],
+          ),
+        );
 
-          if (vacationDates.has(dateString)) continue; // Skip vacation days
+        if (vacationDates.has(dateString)) continue; // Skip vacation days
 
-          const availableSlotsAndDate =
-            await this.calculateAvailableSlotsForDay(day, appointmentTypeId);
-          if (!availableSlotsAndDate.availableSlots.length) continue; // Skip days with no available slots
+        const availableSlotsAndDate = await this.calculateAvailableSlotsForDay(
+          day,
+          appointmentTypeId,
+        );
+        if (!availableSlotsAndDate.availableSlots.length) continue; // Skip days with no available slots
 
-          const location = await this.locationService.getByZone(
-            day.appointmentTypeAgent.agent.zone.zoneId,
-          );
-          if (!uniqueDates.has(dateString)) {
-            uniqueDates.set(dateString, true);
-            return { ...availableSlotsAndDate, date: dateString, location };
-          }
-        }
-      }),
+        const location = await this.locationService.getByZone(
+          day.appointmentTypeAgent.agent.zone.zoneId,
+        );
+        availabilityResults.push({
+          ...availableSlotsAndDate,
+          date: dateString,
+          location,
+        });
+      }
+    }
+
+    // Deduplicate entries by date, keeping only the first occurrence of each date
+    const uniqueResults = availabilityResults.filter(
+      (result, index, self) =>
+        index === self.findIndex((t) => t.date === result.date),
     );
 
-    // Filter out null entries
-    const filteredResults = rawAvailability.filter((entry) => entry);
-
     // Sort results by date
-    filteredResults.sort(
+    uniqueResults.sort(
       (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
     );
 
-    return filteredResults;
+    return uniqueResults.slice(0, 4);
   }
 
   private getDateForDayName(dayName: string, offset = 0): Date {
