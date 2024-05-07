@@ -36,9 +36,13 @@ export class AddressService {
   async getAllByAddressName(
     addressName: string,
   ): Promise<{ address: string }[]> {
-    const addresses = await this.repo.find({
-      where: { addressName: Like(`%${addressName}%`) },
-    });
+    const addresses = await this.repo
+      .createQueryBuilder('address')
+      .where(
+        "CONCAT(address.addressType, ' ', address.addressName) LIKE :name",
+        { name: `%${addressName}%` },
+      )
+      .getMany();
 
     const foundAddresses: { address: string }[] = [];
 
