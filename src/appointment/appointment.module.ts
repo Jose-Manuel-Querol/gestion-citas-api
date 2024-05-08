@@ -11,6 +11,7 @@ import { WhatsappService } from '../shared/whatsapp.service';
 import { AccountModule } from '../account/account.module';
 import { HolidayModule } from '../holiday/holiday.module';
 import { VacationDayModule } from '../vacation-day/vacation-day.module';
+import { AppointmentSchedulerService } from './appointment.scheduler.service';
 
 @Module({
   imports: [
@@ -24,7 +25,7 @@ import { VacationDayModule } from '../vacation-day/vacation-day.module';
     VacationDayModule,
   ],
   controllers: [AppointmentController],
-  providers: [AppointmentService, WhatsappService],
+  providers: [AppointmentService, WhatsappService, AppointmentSchedulerService],
   exports: [AppointmentService],
 })
 export class AppointmentModule {}

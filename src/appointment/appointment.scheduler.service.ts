@@ -3,7 +3,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { AppointmentService } from './appointment.service';
 
 @Injectable()
-export class AgentSchedulerService {
+export class AppointmentSchedulerService {
   constructor(
     @Inject(forwardRef(() => AppointmentService))
     private appointmentService: AppointmentService,
