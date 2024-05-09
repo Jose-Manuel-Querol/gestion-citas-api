@@ -15,11 +15,29 @@ import { CreateAppointmentTypeDto } from './dtos/create-appointment-type.dto';
 import { UpdateAppointmentTypeDto } from './dtos/update-appointment-type.dto';
 import { RolesGuard } from '../account/account-auth/account-guards/roles.guard';
 import { Roles } from '../shared/roles.decorator';
-import { ApiExcludeEndpoint } from '@nestjs/swagger';
+import {
+  ApiExcludeEndpoint,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { AppointmentTypeExampleDto } from './dtos/appointment-type.example.dto';
 
+@ApiTags('Tipos de cita')
 @Controller('appointment-type')
 export class AppointmentTypeController {
   constructor(private appointmentTypeService: AppointmentTypeService) {}
+
+  @ApiOperation({ summary: 'Obtener todos los tipos de cita' })
+  @ApiResponse({
+    status: 200,
+    description: 'Obtiene todas las direcciones',
+    type: [AppointmentTypeExampleDto],
+  })
+  @Get('secure/get-all')
+  async getAllAppointmentTypesPublicApi(): Promise<AppointmentType[]> {
+    return await this.appointmentTypeService.getAll();
+  }
 
   @ApiExcludeEndpoint()
   @UseGuards(JwtAccountGuard)
