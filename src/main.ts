@@ -14,6 +14,7 @@ async function bootstrap() {
       'http://localhost:4200',
       'http://127.0.0.1:4200',
       'https://gestion-citas-app-production.up.railway.app/',
+      'https://gestion-citas-app-production.up.railway.app',
     ],
     credentials: true,
   });
