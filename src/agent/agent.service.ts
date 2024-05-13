@@ -166,17 +166,29 @@ export class AgentService {
       );
     }
     const agent = this.repo.create({
-      fullAddress: createDto.address + ' ' + createDto.addressNro,
-      address: createDto.address,
-      addressNro: createDto.addressNro,
-      city: createDto.city,
       email: createDto.email,
       firstName: createDto.firstName,
       lastName: createDto.lastName,
-      phoneNumber: createDto.phoneNumber,
-      dni: createDto.dni,
       zone,
     });
+
+    if (createDto.address && createDto.addressNro) {
+      agent.address = createDto.address;
+      agent.addressNro = createDto.addressNro;
+      agent.fullAddress = createDto.address + ' ' + createDto.addressNro;
+    }
+
+    if (createDto.city) {
+      agent.city = createDto.city;
+    }
+
+    if (createDto.dni) {
+      agent.dni = createDto.dni;
+    }
+
+    if (createDto.phoneNumber) {
+      agent.phoneNumber = createDto.phoneNumber;
+    }
 
     let baseSlug = generateSlug(createDto.firstName + ' ' + createDto.lastName);
     let agents = await this.getAllBySlug(baseSlug);
@@ -192,10 +204,17 @@ export class AgentService {
       createDto.appointmentTypeAgents,
       createdAgent,
     );
-    await this.vacationDayService.createMany(
-      createDto.vacationDays,
-      createdAgent,
-    );
+    if (
+      createDto.vacationDays &&
+      createDto.vacationDays.vacationDayDates &&
+      createDto.vacationDays.vacationDayDates.length > 0
+    ) {
+      await this.vacationDayService.createMany(
+        createDto.vacationDays,
+        createdAgent,
+      );
+    }
+
     return await this.getById(createdAgent.agentId);
   }
 

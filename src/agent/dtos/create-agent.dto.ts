@@ -26,19 +26,19 @@ export class CreateAgentDto {
   @IsString()
   phoneNumber: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   address: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   addressNro: string;
 
-  @IsOptional()
+  @IsNotEmpty()
   @IsNumber()
   zoneId: number;
 
-  @IsOptional()
+  @IsNotEmpty()
   appointmentTypeAgents: CreateManyAppointmentTypeAgent;
 
   @IsOptional()
