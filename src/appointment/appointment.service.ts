@@ -434,7 +434,6 @@ export class AppointmentService {
     day: Day,
     appointmentTypeId: number,
   ): Promise<{ day: Day; availableSlots: string[] }> {
-    // Fetch appointment type to get the duration for appointments
     const appointmentType = await this.appointmentTypeService.getById(
       appointmentTypeId,
     );
@@ -446,17 +445,21 @@ export class AppointmentService {
     // Process each Franja to generate slots
     for (const franja of day.franjas) {
       const slots = [];
-      let currentTimeSlotStart = moment(franja.startingHour, 'HH:mm');
+      const currentTimeSlotStart = moment(franja.startingHour, 'HH:mm');
       const endTime = moment(franja.endingHour, 'HH:mm');
 
-      while (currentTimeSlotStart.add(duration, 'minutes').isBefore(endTime)) {
+      // Check each slot to ensure it does not end after the endingHour
+      while (currentTimeSlotStart.isSameOrBefore(endTime)) {
         const slotEnd = moment(currentTimeSlotStart).add(duration, 'minutes');
-        slots.push(
-          `${currentTimeSlotStart.format('HH:mm')} to ${slotEnd.format(
-            'HH:mm',
-          )}`,
-        );
-        currentTimeSlotStart = slotEnd;
+        if (slotEnd.isSameOrBefore(endTime)) {
+          // Ensure the slot ends on or before the endingHour
+          slots.push(
+            `${currentTimeSlotStart.format('HH:mm')} to ${slotEnd.format(
+              'HH:mm',
+            )}`,
+          );
+        }
+        currentTimeSlotStart.add(duration, 'minutes');
       }
 
       // Fetch appointments for the day and this specific franja to check which slots are already booked
@@ -481,6 +484,61 @@ export class AppointmentService {
 
     return { day, availableSlots: allSlots };
   }
+
+  /*private async calculateAvailableSlotsForDay(
+    day: Day,
+    appointmentTypeId: number,
+  ): Promise<{ day: Day; availableSlots: string[] }> {
+    const appointmentType = await this.appointmentTypeService.getById(
+      appointmentTypeId,
+    );
+    if (!appointmentType) throw new Error('Appointment type not found');
+
+    const duration = parseInt(appointmentType.duration); // Convert duration to an integer, assuming it's stored in minutes
+    let allSlots = [];
+
+    // Process each Franja to generate slots
+    for (const franja of day.franjas) {
+      const slots = [];
+      const currentTimeSlotStart = moment(franja.startingHour, 'HH:mm');
+      const endTime = moment(franja.endingHour, 'HH:mm');
+
+      // Ensure slots cover the entire range from startingHour to endingHour
+      while (currentTimeSlotStart.isSameOrBefore(endTime)) {
+        const slotEnd = moment(currentTimeSlotStart).add(duration, 'minutes');
+        // Add slot only if it does not end after the endingHour
+        if (slotEnd.isSameOrBefore(endTime)) {
+          slots.push(
+            `${currentTimeSlotStart.format('HH:mm')} to ${slotEnd.format(
+              'HH:mm',
+            )}`,
+          );
+        }
+        currentTimeSlotStart.add(duration, 'minutes'); // Move to next slot
+      }
+
+      // Fetch appointments for the day and this specific franja to check which slots are already booked
+      const appointments = await this.repo.find({
+        where: {
+          day: { dayId: day.dayId },
+          startingHour: MoreThanOrEqual(franja.startingHour),
+          endingHour: LessThanOrEqual(franja.endingHour),
+          appointmentTypeAgent: { appointmentType: { appointmentTypeId } },
+          cancelled: false,
+        },
+      });
+
+      // Map appointments to their starting hours for comparison
+      const bookedTimes = appointments.map((a) => a.startingHour);
+      // Filter out slots that have been booked
+      const availableSlots = slots.filter(
+        (slot) => !bookedTimes.includes(slot.split(' to ')[0]),
+      );
+      allSlots = allSlots.concat(availableSlots);
+    }
+
+    return { day, availableSlots: allSlots };
+  }*/
 
   async create(createDto: CreateAppointmentDto): Promise<Appointment> {
     const day = await this.dayService.getById(createDto.dayId);
