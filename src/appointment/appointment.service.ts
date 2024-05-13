@@ -338,8 +338,12 @@ export class AppointmentService {
     for (const day of targetDays) {
       // Look up to 4 weeks ahead for each day type to find multiple valid occurrences
       for (let week = 0; week < 4; week++) {
+        let dateString;
         const date = this.getDateForDayName(day.dayName, week * 7);
-        const dateString = date.toISOString().split('T')[0];
+        if (date) {
+          //console.log('date', date);
+          dateString = date.toISOString().split('T')[0];
+        }
 
         if (date < new Date() || holidayDates.has(dateString)) continue; // Skip past days and holidays
 
@@ -391,6 +395,7 @@ export class AppointmentService {
   }
 
   private getDateForDayName(dayName: string, offset = 0): Date {
+    //console.log('dayName', dayName);
     const today = new Date();
     today.setHours(0, 0, 0, 0); // Normalize time to the start of today
 
@@ -408,17 +413,21 @@ export class AppointmentService {
         })
         .toLowerCase();
 
-      if (currentDayName === dayName.toLowerCase()) {
-        return new Date(checkDate);
-      }
+      //console.log('dayName', dayName, 'currentDayName', currentDayName);
+      //console.log(currentDayName === dayName.toLowerCase());
 
-      checkDate.setDate(checkDate.getDate() + 1);
-      found++;
+      if (currentDayName === dayName.toLowerCase()) {
+        //console.log(new Date(checkDate));
+        return new Date(checkDate);
+      } else {
+        checkDate.setDate(checkDate.getDate() + 1);
+        found++;
+      }
     }
 
-    throw new Error(
+    /*throw new Error(
       'Unable to find the next occurrence of the day, which suggests an error in day name or logic.',
-    );
+    );*/
   }
 
   private async calculateAvailableSlotsForDay(
