@@ -230,41 +230,22 @@ export class AgentService {
   }
 
   async update(agentId: number, updateDto: UpdateAgentDto): Promise<Agent> {
+    console.log('updateDto', updateDto);
     const agent = await this.getById(agentId);
-    if (updateDto.address) {
-      agent.fullAddress = updateDto.address + ' ' + updateDto.addressNro;
-      agent.address = updateDto.address;
-      agent.addressNro = updateDto.addressNro;
-    }
-
-    if (updateDto.city) {
-      agent.city = updateDto.city;
-    }
-
-    if (updateDto.email !== agent.email) {
-      agent.email = updateDto.email;
-      const updatedAccount: UpdateAccountDto = { email: updateDto.email };
-      await this.accountService.updateAccount(
-        agent.account.accountId,
-        updatedAccount,
-      );
-    }
-
-    if (updateDto.firstName) {
-      agent.firstName = updateDto.firstName;
-    }
-
-    if (updateDto.lastName) {
-      agent.lastName = updateDto.lastName;
-    }
-
-    if (updateDto.phoneNumber) {
-      agent.phoneNumber = updateDto.phoneNumber;
-    }
-
-    if (updateDto.dni) {
-      agent.dni = updateDto.dni;
-    }
+    agent.fullAddress = updateDto.address + ' ' + updateDto.addressNro;
+    agent.address = updateDto.address;
+    agent.addressNro = updateDto.addressNro;
+    agent.city = updateDto.city;
+    agent.email = updateDto.email;
+    const updatedAccount: UpdateAccountDto = { email: updateDto.email };
+    await this.accountService.updateAccount(
+      agent.account.accountId,
+      updatedAccount,
+    );
+    agent.firstName = updateDto.firstName;
+    agent.lastName = updateDto.lastName;
+    agent.phoneNumber = updateDto.phoneNumber;
+    agent.dni = updateDto.dni;
 
     if (updateDto.zoneId) {
       const zone = await this.zoneService.getById(updateDto.zoneId);
