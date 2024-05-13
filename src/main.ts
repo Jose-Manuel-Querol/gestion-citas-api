@@ -15,6 +15,8 @@ async function bootstrap() {
       'http://127.0.0.1:4200',
       'https://gestion-citas-app-production.up.railway.app/',
       'https://gestion-citas-app-production.up.railway.app',
+      'https://citaprevia.vitar.es/',
+      'https://citaprevia.vitar.es',
     ],
     credentials: true,
   });
