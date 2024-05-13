@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 import { CreateManyAppointmentTypeAgent } from '../../appointment-type-agent/dtos/create-many-appointment-type-agent.dto';
 import { CreateManyVacationDays } from '../../vacation-day/dtos/create-many-vacation-days.dto';
 export class CreateAgentDto {
@@ -14,15 +14,15 @@ export class CreateAgentDto {
   @IsString()
   email: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   city: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   dni: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   phoneNumber: string;
 
@@ -34,13 +34,13 @@ export class CreateAgentDto {
   @IsString()
   addressNro: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsNumber()
   zoneId: number;
 
-  @IsNotEmpty()
+  @IsOptional()
   appointmentTypeAgents: CreateManyAppointmentTypeAgent;
 
-  @IsNotEmpty()
+  @IsOptional()
   vacationDays: CreateManyVacationDays;
 }
