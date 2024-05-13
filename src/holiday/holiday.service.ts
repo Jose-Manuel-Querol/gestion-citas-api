@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Holiday } from './holiday.entity';
 import { MoreThanOrEqual, Repository } from 'typeorm';
@@ -47,30 +43,7 @@ export class HolidayService {
 
   async createMany(createDto: CreateManyHoliday): Promise<Holiday[]> {
     const holidays: Holiday[] = [];
-    /*const currentHolidays = await this.getAllHoliday();
-    const currentHolidayDates = currentHolidays.map(
-      (holiday) => holiday.holidayDate,
-    );
-    console.log('currentHolidayDates', currentHolidayDates);
-    const newHolidayDates = createDto.holidayDates;
-    const holidaysToDelete = currentHolidayDates.filter(
-      (holidayDate) => !newHolidayDates.includes(holidayDate),
-    );
-
-    console.log('holidaysToDelete', holidaysToDelete);*/
-
-    /*if (holidaysToDelete.length > 0) {
-      for (let i = 0; i < holidaysToDelete.length; i++) {
-        await this.delete(holidaysToDelete[i]);
-      }
-    }*/
     for (let i = 0; i < createDto.holidayDates.length; i++) {
-      const foundDate = await this.getAllByDate(createDto.holidayDates[i]);
-      if (foundDate.length > 0) {
-        throw new BadRequestException(
-          `Usted ya creó una día de vacación con la fecha ${createDto.holidayDates[i]}`,
-        );
-      }
       const holiday = this.repo.create({
         holidayDate: createDto.holidayDates[i],
       });
