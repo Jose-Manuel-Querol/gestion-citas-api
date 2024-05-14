@@ -209,6 +209,7 @@ export class AgentService {
       createDto.vacationDays.vacationDayDates &&
       createDto.vacationDays.vacationDayDates.length > 0
     ) {
+      console.log('vacaciones', createDto.vacationDays);
       await this.vacationDayService.createMany(
         createDto.vacationDays,
         createdAgent,
