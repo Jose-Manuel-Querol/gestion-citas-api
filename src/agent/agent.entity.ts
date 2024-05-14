@@ -35,10 +35,10 @@ export class Agent {
   @Column({ nullable: true })
   dni: string;
 
-  @Column()
+  @Column({ nullable: true })
   phoneNumber: string;
 
-  @Column()
+  @Column({ nullable: true })
   address: string;
 
   @Column({ nullable: true })
