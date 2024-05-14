@@ -317,6 +317,127 @@ export class AppointmentService {
     const targetDays = await this.dayService.filterDaysAndAgents(
       appointmentTypeId,
     );
+    const todayISO = new Date().toISOString().split('T')[0];
+    const holidays = await this.holidayService.getAllHolidayAvailable(todayISO);
+    const holidayDates = new Set(
+      holidays.map(
+        (holiday) =>
+          (holiday.holidayDate as unknown as Date).toISOString().split('T')[0],
+      ),
+    );
+    const availabilityResults = [];
+    const agentLoad = new Map();
+
+    for (const day of targetDays) {
+      for (let week = 0; week < 4; week++) {
+        const date = this.getDateForDayName(day.dayName, week * 7);
+        let dateString;
+        if (date) {
+          dateString = date.toISOString().split('T')[0];
+        }
+
+        if (date < new Date() || holidayDates.has(dateString)) continue; // Skip past days and holidays
+
+        const agentVacationDays =
+          await this.vacationDayService.getAllVacationDayByAgentAndAvailable(
+            day.appointmentTypeAgent.agent.agentId,
+            todayISO,
+          );
+        const vacationDates = new Set(
+          agentVacationDays.map(
+            (vacation) =>
+              (vacation.vacationDayDate as unknown as Date)
+                .toISOString()
+                .split('T')[0],
+          ),
+        );
+
+        if (vacationDates.has(dateString)) continue; // Skip vacation days
+
+        const availableSlotsAndDate = await this.calculateAvailableSlotsForDay(
+          day,
+          appointmentTypeId,
+        );
+        if (!availableSlotsAndDate.availableSlots.length) continue; // Skip days with no available slots
+        const location = await this.locationService.getByZone(
+          day.appointmentTypeAgent.agent.zone.zoneId,
+        );
+
+        const availableSlots = [];
+        // Add each slot with corresponding agent load tracking
+        availableSlotsAndDate.availableSlots.forEach((slot) => {
+          const load =
+            agentLoad.get(day.appointmentTypeAgent.agent.agentId) || 0;
+          agentLoad.set(day.appointmentTypeAgent.agent.agentId, load + 1);
+          availableSlots.push({
+            day,
+            slot: slot,
+            agentId: day.appointmentTypeAgent.agent.agentId,
+            date: dateString,
+            location,
+          });
+        });
+
+        // Now sort the results based on agent load and date
+        availableSlots.sort((a, b) => {
+          const loadDifference =
+            (agentLoad.get(a.agentId) || 0) - (agentLoad.get(b.agentId) || 0);
+          if (loadDifference === 0) {
+            // If load is the same, sort by date
+            return new Date(a.date).getTime() - new Date(b.date).getTime();
+          }
+          return loadDifference;
+        });
+
+        const slots: string[] = availableSlots.map((slot) => slot.slot.time);
+
+        availabilityResults.push({
+          day,
+          availableSlots: slots,
+          date: dateString,
+          location,
+        });
+      }
+    }
+
+    /*availabilityResults.sort((a, b) => {
+      const loadDifference =
+        (agentLoad.get(a.agentId) || 0) - (agentLoad.get(b.agentId) || 0);
+      if (loadDifference === 0) {
+        return new Date(a.date).getTime() - new Date(b.date).getTime();
+      }
+      return loadDifference;
+    });*/
+
+    // Get the top 4 unique dates
+    const uniqueResults = availabilityResults.filter(
+      (result, index, self) =>
+        index === self.findIndex((t) => t.date === result.date),
+    );
+
+    uniqueResults.sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+    );
+
+    return uniqueResults.slice(0, 4);
+    /* const uniqueDates = new Set();
+    const finalResults = [];
+
+    for (const result of availabilityResults) {
+      if (uniqueDates.size >= 4) break;
+      if (!uniqueDates.has(result.date)) {
+        uniqueDates.add(result.date);
+        finalResults.push(result);
+      }
+    }
+
+    return finalResults;*/
+  }
+
+  async findAvailableAppointmentsOld(appointmentTypeId: number) {
+    const targetDays = await this.dayService.filterDaysAndAgents(
+      appointmentTypeId,
+    );
 
     const todayISO = new Date().toISOString().split('T')[0];
     const holidays = await this.holidayService.getAllHolidayAvailable(todayISO);
@@ -418,6 +539,56 @@ export class AppointmentService {
   private async calculateAvailableSlotsForDay(
     day: Day,
     appointmentTypeId: number,
+  ): Promise<{
+    day: Day;
+    availableSlots: { time: string; agentId: number }[];
+  }> {
+    const appointmentType = await this.appointmentTypeService.getById(
+      appointmentTypeId,
+    );
+    if (!appointmentType) throw new Error('El tipo de cita no fue encontrado');
+    const duration = parseInt(appointmentType.duration);
+    let allSlots = [];
+
+    for (const franja of day.franjas) {
+      const slots = [];
+      const currentTimeSlotStart = moment(franja.startingHour, 'HH:mm');
+      const endTime = moment(franja.endingHour, 'HH:mm');
+
+      while (currentTimeSlotStart.isSameOrBefore(endTime)) {
+        const slotEnd = moment(currentTimeSlotStart).add(duration, 'minutes');
+        if (slotEnd.isSameOrBefore(endTime)) {
+          slots.push({
+            time: `${currentTimeSlotStart.format('HH:mm')} to ${slotEnd.format(
+              'HH:mm',
+            )}`,
+            agentId: day.appointmentTypeAgent.agent.agentId, // Assuming agentId is accessible like this
+          });
+        }
+        currentTimeSlotStart.add(duration, 'minutes');
+      }
+
+      const appointments = await this.repo.find({
+        where: {
+          day: { dayId: day.dayId },
+          appointmentTypeAgent: { appointmentType: { appointmentTypeId } },
+          cancelled: false,
+        },
+      });
+
+      const bookedTimes = new Set(appointments.map((a) => a.startingHour));
+      const availableSlots = slots.filter(
+        (slot) => !bookedTimes.has(slot.time.split(' to ')[0]),
+      );
+      allSlots = allSlots.concat(availableSlots);
+    }
+
+    return { day, availableSlots: allSlots };
+  }
+
+  /*private async calculateAvailableSlotsForDayOld(
+    day: Day,
+    appointmentTypeId: number,
   ): Promise<{ day: Day; availableSlots: string[] }> {
     const appointmentType = await this.appointmentTypeService.getById(
       appointmentTypeId,
@@ -466,7 +637,7 @@ export class AppointmentService {
     }
 
     return { day, availableSlots: allSlots };
-  }
+  }*/
 
   async create(createDto: CreateAppointmentDto): Promise<Appointment> {
     const day = await this.dayService.getById(createDto.dayId);
