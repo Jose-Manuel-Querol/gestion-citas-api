@@ -91,6 +91,7 @@ export class AppointmentController {
     @Query('endingDate') endingDate: string,
     @Query('typeName') typeName?: string,
     @Query('clientName') clientName?: string,
+    @Query('clientLastName') clientLastName?: string,
     @Query('firstName') firstName?: string,
     @Query('code') code?: string,
   ): Promise<Appointment[]> {
@@ -99,6 +100,7 @@ export class AppointmentController {
       endingDate,
       typeName,
       clientName,
+      clientLastName,
       firstName,
       code,
     );
@@ -113,6 +115,7 @@ export class AppointmentController {
     @Res() res: Response,
     @Query('typeName') typeName?: string,
     @Query('clientName') clientName?: string,
+    @Query('clientLastName') clientLastName?: string,
     @Query('firstName') firstName?: string,
     @Query('agentId') agentId?: string,
     @Query('code') code?: string,
@@ -122,6 +125,7 @@ export class AppointmentController {
       endingDate,
       typeName,
       clientName,
+      clientLastName,
       firstName,
       agentId,
       code,

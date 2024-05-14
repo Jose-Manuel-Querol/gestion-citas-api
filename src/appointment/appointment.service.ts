@@ -171,6 +171,7 @@ export class AppointmentService {
     endingDate: string,
     typeName?: string,
     clientName?: string,
+    clientLastName?: string,
     firstName?: string,
     code?: string,
   ): Promise<Appointment[]> {
@@ -197,10 +198,14 @@ export class AppointmentService {
       });
 
     // Optional conditions
-    if (clientName) {
-      queryBuilder.andWhere('appointment.clientName LIKE  :clientName', {
-        clientName: `%${clientName}%`,
-      });
+    if (clientName || clientLastName) {
+      queryBuilder.andWhere(
+        '(appointment.clientName LIKE :clientName OR appointment.clientLastName LIKE :clientLastName)',
+        {
+          clientName: clientName ? `%${clientName}%` : '%%',
+          clientLastName: clientLastName ? `%${clientLastName}%` : '%%',
+        },
+      );
     }
     if (code) {
       queryBuilder.andWhere('appointment.code LIKE  :code', {
@@ -227,6 +232,7 @@ export class AppointmentService {
     endingDate: string,
     typeName?: string,
     clientName?: string,
+    clientLastName?: string,
     firstName?: string,
     agentId?: string,
     code?: string,
@@ -254,11 +260,16 @@ export class AppointmentService {
       });
 
     // Optional conditions
-    if (clientName) {
-      queryBuilder.andWhere('appointment.clientName LIKE  :clientName', {
-        clientName: `%${clientName}%`,
-      });
+    if (clientName || clientLastName) {
+      queryBuilder.andWhere(
+        '(appointment.clientName LIKE :clientName OR appointment.clientLastName LIKE :clientLastName)',
+        {
+          clientName: clientName ? `%${clientName}%` : '%%',
+          clientLastName: clientLastName ? `%${clientLastName}%` : '%%',
+        },
+      );
     }
+
     if (code) {
       queryBuilder.andWhere('appointment.code LIKE  :code', {
         code: `%${code}%`,
@@ -651,6 +662,7 @@ export class AppointmentService {
       clientAddress: createDto.clientAddress,
       clientPhoneNumber: createDto.clientPhoneNumber,
       clientName: createDto.clientName,
+      clientLastName: createDto.clientLastName,
       day,
       dayDate: createDto.dayDate,
       location,
@@ -704,6 +716,7 @@ export class AppointmentService {
     }
     appointment.clientAddress = updateDto.clientAddress;
     appointment.clientName = updateDto.clientName;
+    appointment.clientLastName = updateDto.clientLastName;
     appointment.clientPhoneNumber = updateDto.clientPhoneNumber;
     appointment.dayDate = updateDto.dayDate;
     appointment.startingHour = updateDto.startingHour;
@@ -739,7 +752,7 @@ export class AppointmentService {
         agent: `${appointment.appointmentTypeAgent.agent.firstName} ${appointment.appointmentTypeAgent.agent.lastName}`,
         appointmentType:
           appointment.appointmentTypeAgent.appointmentType.typeName,
-        client: appointment.clientName,
+        client: `${appointment.clientName} ${appointment.clientLastName || ''}`,
         phone: appointment.clientPhoneNumber,
         code: appointment.code,
         location: appointment.location.locationName,
@@ -771,7 +784,7 @@ export class AppointmentService {
         codigoPlantilla: 'cancelar_agenda',
         codigoPostalTel: '+34',
         numeroReceptor: `34${updatedAppointments[i].clientPhoneNumber}`,
-        nombreReceptor: updatedAppointments[i].clientName,
+        nombreReceptor: `${updatedAppointments[i].clientName} ${updatedAppointments[i].clientLastName}`,
         fBotEncendido: true,
         fMostrarMensajeEnChat: true,
         parametros: {
@@ -813,7 +826,7 @@ export class AppointmentService {
         codigoPlantilla: 'recordatorio_citas',
         codigoPostalTel: '+34',
         numeroReceptor: `34${appointments[i].clientPhoneNumber}`,
-        nombreReceptor: appointments[i].clientName,
+        nombreReceptor: `${appointments[i].clientName} ${appointments[i].clientLastName}`,
         fBotEncendido: true,
         fMostrarMensajeEnChat: true,
         parametros: {
@@ -836,7 +849,7 @@ export class AppointmentService {
       codigoPlantilla: 'cancelar_agenda',
       codigoPostalTel: '+34',
       numeroReceptor: `34${updatedAppointment.clientPhoneNumber}`,
-      nombreReceptor: updatedAppointment.clientName,
+      nombreReceptor: `${updatedAppointment.clientName} ${updatedAppointment.clientLastName}`,
       fBotEncendido: true,
       fMostrarMensajeEnChat: true,
       parametros: {

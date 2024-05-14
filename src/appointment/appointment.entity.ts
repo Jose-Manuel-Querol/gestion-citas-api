@@ -18,6 +18,9 @@ export class Appointment {
   @Column()
   clientName: string;
 
+  @Column({ nullable: true })
+  clientLastName: string;
+
   @Column()
   clientPhoneNumber: string;
 
