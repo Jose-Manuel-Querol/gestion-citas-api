@@ -237,10 +237,15 @@ export class AgentService {
     agent.city = updateDto.city;
     agent.email = updateDto.email;
     const updatedAccount: UpdateAccountDto = { email: updateDto.email };
-    await this.accountService.updateAccount(
-      agent.account.accountId,
-      updatedAccount,
+    const accountsByEmail = await this.accountService.getByEmail(
+      updateDto.email,
     );
+    if (accountsByEmail.length) {
+      await this.accountService.updateAccount(
+        agent.account.accountId,
+        updatedAccount,
+      );
+    }
     agent.firstName = updateDto.firstName;
     agent.lastName = updateDto.lastName;
     agent.phoneNumber = updateDto.phoneNumber;
