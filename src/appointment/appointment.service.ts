@@ -330,16 +330,14 @@ export class AppointmentService {
     const availabilityResults = [];
 
     for (const day of targetDays) {
-      // Look up to 4 weeks ahead for each day type to find multiple valid occurrences
       for (let week = 0; week < 4; week++) {
         let dateString;
         const date = this.getDateForDayName(day.dayName, week * 7);
         if (date) {
-          //console.log('date', date);
           dateString = date.toISOString().split('T')[0];
         }
 
-        if (date < new Date() || holidayDates.has(dateString)) continue; // Skip past days and holidays
+        if (date < new Date() || holidayDates.has(dateString)) continue;
 
         const agentVacationDays =
           await this.vacationDayService.getAllVacationDayByAgentAndAvailable(
@@ -355,7 +353,7 @@ export class AppointmentService {
           ),
         );
 
-        if (vacationDates.has(dateString)) continue; // Skip vacation days
+        if (vacationDates.has(dateString)) continue;
 
         const availableSlotsAndDate = await this.calculateAvailableSlotsForDay(
           day,
@@ -374,13 +372,11 @@ export class AppointmentService {
       }
     }
 
-    // Deduplicate entries by date, keeping only the first occurrence of each date
     const uniqueResults = availabilityResults.filter(
       (result, index, self) =>
         index === self.findIndex((t) => t.date === result.date),
     );
 
-    // Sort results by date
     uniqueResults.sort(
       (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
     );
@@ -389,15 +385,14 @@ export class AppointmentService {
   }
 
   private getDateForDayName(dayName: string, offset = 0): Date {
-    //console.log('dayName', dayName);
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Normalize time to the start of today
+    today.setHours(0, 0, 0, 0);
 
     const checkDate = new Date(today);
-    checkDate.setDate(today.getDate() + offset); // Start checking from today + offset days
+    checkDate.setDate(today.getDate() + offset);
 
     let found = 0;
-    const limit = 365; // Avoid infinite loops, limit to a year
+    const limit = 365;
 
     while (found < limit) {
       const currentDayName = checkDate
@@ -407,11 +402,7 @@ export class AppointmentService {
         })
         .toLowerCase();
 
-      //console.log('dayName', dayName, 'currentDayName', currentDayName);
-      //console.log(currentDayName === dayName.toLowerCase());
-
       if (currentDayName === dayName.toLowerCase()) {
-        //console.log(new Date(checkDate));
         return new Date(checkDate);
       } else {
         checkDate.setDate(checkDate.getDate() + 1);

@@ -85,7 +85,6 @@ export class AddressService {
 
     // Process each row in the excel
     for (const row of data) {
-      //console.log('row', row);
       const code = row['CODIGO'];
       const addressType = row['TIPO'];
       const addressName = row['NOMBRE VIA'];

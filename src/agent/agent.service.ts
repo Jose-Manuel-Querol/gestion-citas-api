@@ -230,7 +230,6 @@ export class AgentService {
   }
 
   async update(agentId: number, updateDto: UpdateAgentDto): Promise<Agent> {
-    console.log('updateDto', updateDto);
     const agent = await this.getById(agentId);
     agent.fullAddress = updateDto.address + ' ' + updateDto.addressNro;
     agent.address = updateDto.address;
