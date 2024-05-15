@@ -361,10 +361,10 @@ export class AppointmentService {
         );
 
         if (vacationDates.has(dateString)) continue; // Skip vacation days
-
         const availableSlotsAndDate = await this.calculateAvailableSlotsForDay(
           day,
           appointmentTypeId,
+          date,
         );
         if (!availableSlotsAndDate.availableSlots.length) continue; // Skip days with no available slots
         const location = await this.locationService.getByZone(
@@ -470,19 +470,17 @@ export class AppointmentService {
         found++;
       }
     }
-
-    /*throw new Error(
-      'Unable to find the next occurrence of the day, which suggests an error in day name or logic.',
-    );*/
   }
 
   private async calculateAvailableSlotsForDay(
     day: Day,
     appointmentTypeId: number,
+    date: Date,
   ): Promise<{
     day: Day;
     availableSlots: { time: string; agentId: number }[];
   }> {
+    date.setHours(0, 0, 0);
     const appointmentType = await this.appointmentTypeService.getById(
       appointmentTypeId,
     );
@@ -508,16 +506,24 @@ export class AppointmentService {
         }
         currentTimeSlotStart.add(duration, 'minutes');
       }
-
-      const appointments = await this.repo.find({
+      let appointments = await this.repo.find({
         where: {
           day: { dayId: day.dayId },
-          appointmentTypeAgent: { appointmentType: { appointmentTypeId } },
+          appointmentTypeAgent: {
+            appointmentType: { appointmentTypeId },
+          },
           cancelled: false,
         },
       });
+      appointments = appointments.filter(
+        (row) =>
+          new Date(row.dayDate).toISOString().split('T')[0] ===
+          date.toISOString().split('T')[0],
+      );
+      const bookedTimes = new Set(
+        appointments.map((appointment) => appointment.startingHour),
+      );
 
-      const bookedTimes = new Set(appointments.map((a) => a.startingHour));
       const availableSlots = slots.filter(
         (slot) => !bookedTimes.has(slot.time.split(' to ')[0]),
       );
