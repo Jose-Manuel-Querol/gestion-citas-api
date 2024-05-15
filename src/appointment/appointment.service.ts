@@ -338,7 +338,6 @@ export class AppointmentService {
     );
     const availabilityResults = [];
     const agentLoad = new Map();
-
     for (const day of targetDays) {
       for (let week = 0; week < 4; week++) {
         const date = this.getDateForDayName(day.dayName, week * 7);
@@ -346,9 +345,7 @@ export class AppointmentService {
         if (date) {
           dateString = date.toISOString().split('T')[0];
         }
-
-        if (date < new Date() || holidayDates.has(dateString)) continue; // Skip past days and holidays
-
+        if (date < new Date() || holidayDates.has(dateString)) continue;
         const agentVacationDays =
           await this.vacationDayService.getAllVacationDayByAgentAndAvailable(
             day.appointmentTypeAgent.agent.agentId,
@@ -375,7 +372,6 @@ export class AppointmentService {
         );
 
         const availableSlots = [];
-        // Add each slot with corresponding agent load tracking
         availableSlotsAndDate.availableSlots.forEach((slot) => {
           const load =
             agentLoad.get(day.appointmentTypeAgent.agent.agentId) || 0;
@@ -389,25 +385,29 @@ export class AppointmentService {
           });
         });
 
-        // Now sort the results based on agent load and date
-        availableSlots.sort((a, b) => {
-          const loadDifference =
-            (agentLoad.get(a.agentId) || 0) - (agentLoad.get(b.agentId) || 0);
-          if (loadDifference === 0) {
-            // If load is the same, sort by date
-            return new Date(a.date).getTime() - new Date(b.date).getTime();
-          }
-          return loadDifference;
+        const agentSlotCounts = new Map();
+        availableSlotsAndDate.availableSlots.forEach((slot) => {
+          const agentId = slot.agentId;
+          const currentCount = agentSlotCounts.get(agentId) || 0;
+          agentSlotCounts.set(agentId, currentCount + 1);
         });
-
-        const slots: string[] = availableSlots.map((slot) => slot.slot.time);
-
-        availabilityResults.push({
+        const minAgentLoad = Math.min(...agentSlotCounts.values());
+        const agentsWithMinLoad = Array.from(agentSlotCounts.entries())
+          .filter(([x, count]) => count === minAgentLoad)
+          .map(([agentId]) => agentId);
+        const slotsWithMinAgentLoad = availableSlots
+          .filter((slot) => agentsWithMinLoad.includes(slot.agentId))
+          .sort(
+            (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+          );
+        const slots = slotsWithMinAgentLoad.map((slot) => slot.slot.time);
+        const availabilityResult = {
           day,
           availableSlots: slots,
           date: dateString,
           location,
-        });
+        };
+        availabilityResults.push(availabilityResult);
       }
     }
 
@@ -443,77 +443,6 @@ export class AppointmentService {
     }
 
     return finalResults;*/
-  }
-
-  async findAvailableAppointmentsOld(appointmentTypeId: number) {
-    const targetDays = await this.dayService.filterDaysAndAgents(
-      appointmentTypeId,
-    );
-
-    const todayISO = new Date().toISOString().split('T')[0];
-    const holidays = await this.holidayService.getAllHolidayAvailable(todayISO);
-    const holidayDates = new Set(
-      holidays.map(
-        (holiday) =>
-          (holiday.holidayDate as unknown as Date).toISOString().split('T')[0],
-      ),
-    );
-
-    const availabilityResults = [];
-
-    for (const day of targetDays) {
-      for (let week = 0; week < 4; week++) {
-        let dateString;
-        const date = this.getDateForDayName(day.dayName, week * 7);
-        if (date) {
-          dateString = date.toISOString().split('T')[0];
-        }
-
-        if (date < new Date() || holidayDates.has(dateString)) continue;
-
-        const agentVacationDays =
-          await this.vacationDayService.getAllVacationDayByAgentAndAvailable(
-            day.appointmentTypeAgent.agent.agentId,
-            todayISO,
-          );
-        const vacationDates = new Set(
-          agentVacationDays.map(
-            (vacation) =>
-              (vacation.vacationDayDate as unknown as Date)
-                .toISOString()
-                .split('T')[0],
-          ),
-        );
-
-        if (vacationDates.has(dateString)) continue;
-
-        const availableSlotsAndDate = await this.calculateAvailableSlotsForDay(
-          day,
-          appointmentTypeId,
-        );
-        if (!availableSlotsAndDate.availableSlots.length) continue; // Skip days with no available slots
-
-        const location = await this.locationService.getByZone(
-          day.appointmentTypeAgent.agent.zone.zoneId,
-        );
-        availabilityResults.push({
-          ...availableSlotsAndDate,
-          date: dateString,
-          location,
-        });
-      }
-    }
-
-    const uniqueResults = availabilityResults.filter(
-      (result, index, self) =>
-        index === self.findIndex((t) => t.date === result.date),
-    );
-
-    uniqueResults.sort(
-      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
-    );
-
-    return uniqueResults.slice(0, 4);
   }
 
   private getDateForDayName(dayName: string, offset = 0): Date {
@@ -558,6 +487,7 @@ export class AppointmentService {
       appointmentTypeId,
     );
     if (!appointmentType) throw new Error('El tipo de cita no fue encontrado');
+
     const duration = parseInt(appointmentType.duration);
     let allSlots = [];
 
@@ -573,7 +503,7 @@ export class AppointmentService {
             time: `${currentTimeSlotStart.format('HH:mm')} to ${slotEnd.format(
               'HH:mm',
             )}`,
-            agentId: day.appointmentTypeAgent.agent.agentId, // Assuming agentId is accessible like this
+            agentId: day.appointmentTypeAgent.agent.agentId,
           });
         }
         currentTimeSlotStart.add(duration, 'minutes');
