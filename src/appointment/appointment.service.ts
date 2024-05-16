@@ -336,8 +336,10 @@ export class AppointmentService {
           (holiday.holidayDate as unknown as Date).toISOString().split('T')[0],
       ),
     );
-    const availabilityResults = [];
-    const agentLoad = new Map();
+
+    // Objeto para almacenar las ranuras disponibles por día
+    const appointmentsByDate = {};
+
     for (const day of targetDays) {
       for (let week = 0; week < 4; week++) {
         const date = this.getDateForDayName(day.dayName, week * 7);
@@ -367,82 +369,56 @@ export class AppointmentService {
           date,
         );
         if (!availableSlotsAndDate.availableSlots.length) continue; // Skip days with no available slots
-        const location = await this.locationService.getByZone(
-          day.appointmentTypeAgent.agent.zone.zoneId,
-        );
 
-        const availableSlots = [];
-        availableSlotsAndDate.availableSlots.forEach((slot) => {
-          const load =
-            agentLoad.get(day.appointmentTypeAgent.agent.agentId) || 0;
-          agentLoad.set(day.appointmentTypeAgent.agent.agentId, load + 1);
-          availableSlots.push({
-            day,
-            slot: slot,
-            agentId: day.appointmentTypeAgent.agent.agentId,
+        const agentId = day.appointmentTypeAgent.agent.agentId;
+        // Agregar las ranuras disponibles al objeto appointmentsByDate
+        if (!appointmentsByDate[dateString]) {
+          appointmentsByDate[dateString] = {
             date: dateString,
-            location,
-          });
-        });
-
-        const agentSlotCounts = new Map();
-        availableSlotsAndDate.availableSlots.forEach((slot) => {
-          const agentId = slot.agentId;
-          const currentCount = agentSlotCounts.get(agentId) || 0;
-          agentSlotCounts.set(agentId, currentCount + 1);
-        });
-        const minAgentLoad = Math.min(...agentSlotCounts.values());
-        const agentsWithMinLoad = Array.from(agentSlotCounts.entries())
-          .filter(([x, count]) => count === minAgentLoad)
-          .map(([agentId]) => agentId);
-        const slotsWithMinAgentLoad = availableSlots
-          .filter((slot) => agentsWithMinLoad.includes(slot.agentId))
-          .sort(
-            (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
-          );
-        const slots = slotsWithMinAgentLoad.map((slot) => slot.slot.time);
-        const availabilityResult = {
-          day,
-          availableSlots: slots,
-          date: dateString,
-          location,
-        };
-        availabilityResults.push(availabilityResult);
+            agentId: agentId,
+            availableSlots: availableSlotsAndDate.availableSlots.map(
+              (row) => row.time,
+            ),
+            location: await this.locationService.getByZone(
+              day.appointmentTypeAgent.agent.zone.zoneId,
+            ),
+            day: day,
+          };
+        } else {
+          // Si ya existe un registro para este día, comparar las ranuras disponibles y actualizar si es necesario
+          const existingAppointment = appointmentsByDate[dateString];
+          if (
+            availableSlotsAndDate.availableSlots.length >
+            existingAppointment.availableSlots.length
+          ) {
+            appointmentsByDate[dateString] = {
+              date: dateString,
+              agentId: agentId,
+              availableSlots: availableSlotsAndDate.availableSlots.map(
+                (row) => row.time,
+              ),
+              location: await this.locationService.getByZone(
+                day.appointmentTypeAgent.agent.zone.zoneId,
+              ),
+              day: day,
+            };
+          }
+        }
       }
     }
 
-    /*availabilityResults.sort((a, b) => {
-      const loadDifference =
-        (agentLoad.get(a.agentId) || 0) - (agentLoad.get(b.agentId) || 0);
-      if (loadDifference === 0) {
-        return new Date(a.date).getTime() - new Date(b.date).getTime();
-      }
-      return loadDifference;
-    });*/
-
-    // Get the top 4 unique dates
-    const uniqueResults = availabilityResults.filter(
-      (result, index, self) =>
-        index === self.findIndex((t) => t.date === result.date),
-    );
-
-    uniqueResults.sort(
-      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
-    );
-
-    return uniqueResults.slice(0, 4);
-    /* const uniqueDates = new Set();
-    const finalResults = [];
-
-    for (const result of availabilityResults) {
-      if (uniqueDates.size >= 4) break;
-      if (!uniqueDates.has(result.date)) {
-        uniqueDates.add(result.date);
-        finalResults.push(result);
-      }
-    }
-
-    return finalResults;*/
+    // Convertir el objeto appointmentsByDate en un array
+    const appointmentsArray = Object.values(appointmentsByDate);
+    // Ordenar los resultados por fecha y tomar los primeros cuatro
+    const sortedAppointments = appointmentsArray
+      .sort((a, b) => {
+        return (
+          new Date((a as any).date).getTime() -
+          new Date((b as any).date).getTime()
+        );
+      })
+      .slice(0, 4);
+    return sortedAppointments;
   }
 
   private getDateForDayName(dayName: string, offset = 0): Date {

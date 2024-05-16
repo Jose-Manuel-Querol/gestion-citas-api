@@ -46,8 +46,8 @@ async function bootstrap() {
   };
   document.security = [{ apiToken: [] }];
   SwaggerModule.setup('docs', app, document);
-  await app.listen(3500, () => {
-    console.log('Listening on port:3500');
+  await app.listen(3000, () => {
+    console.log('Listening on port:3000');
   });
 }
 bootstrap();
