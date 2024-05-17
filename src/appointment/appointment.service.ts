@@ -712,7 +712,7 @@ export class AppointmentService {
   async getAppointmentsInTwoDays(): Promise<Appointment[]> {
     // Calculate the date that is two days after the current day
     const currentDate = new Date();
-    currentDate.setDate(currentDate.getDate() + 2); // Add two days to the current date
+    currentDate.setDate(currentDate.getDate() + 1); // Add two days to the current date
 
     // Format the date to start at the beginning of the day in ISO format
     const targetDate = new Date(currentDate.setHours(0, 0, 0, 0)).toISOString();
