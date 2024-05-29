@@ -341,7 +341,7 @@ export class AppointmentService {
     const appointmentsByDate = {};
 
     for (const day of targetDays) {
-      for (let week = 0; week < 53; week++) {
+      for (let week = 0; week < 26; week++) {
         const date = this.getDateForDayName(day.dayName, week * 7);
         let dateString;
         if (date) {
