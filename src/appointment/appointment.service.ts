@@ -341,7 +341,7 @@ export class AppointmentService {
     const appointmentsByDate = {};
 
     for (const day of targetDays) {
-      for (let week = 0; week < 4; week++) {
+      for (let week = 0; week < 12; week++) {
         const date = this.getDateForDayName(day.dayName, week * 7);
         let dateString;
         if (date) {
@@ -408,6 +408,7 @@ export class AppointmentService {
     }
 
     // Convertir el objeto appointmentsByDate en un array
+
     const appointmentsArray = Object.values(appointmentsByDate);
     // Ordenar los resultados por fecha y tomar los primeros cuatro
     const sortedAppointments = appointmentsArray
@@ -509,59 +510,6 @@ export class AppointmentService {
     return { day, availableSlots: allSlots };
   }
 
-  /*private async calculateAvailableSlotsForDayOld(
-    day: Day,
-    appointmentTypeId: number,
-  ): Promise<{ day: Day; availableSlots: string[] }> {
-    const appointmentType = await this.appointmentTypeService.getById(
-      appointmentTypeId,
-    );
-    if (!appointmentType) throw new Error('El tipo de cita no fue encontrado');
-
-    const duration = parseInt(appointmentType.duration); // Convert duration to an integer, assuming it's stored in minutes
-    let allSlots = [];
-
-    // Process each Franja to generate slots
-    for (const franja of day.franjas) {
-      const slots = [];
-      const currentTimeSlotStart = moment(franja.startingHour, 'HH:mm');
-      const endTime = moment(franja.endingHour, 'HH:mm');
-
-      // Check each slot to ensure it does not end after the endingHour
-      while (currentTimeSlotStart.isSameOrBefore(endTime)) {
-        const slotEnd = moment(currentTimeSlotStart).add(duration, 'minutes');
-        if (slotEnd.isSameOrBefore(endTime)) {
-          // Ensure the slot ends on or before the endingHour
-          slots.push(
-            `${currentTimeSlotStart.format('HH:mm')} to ${slotEnd.format(
-              'HH:mm',
-            )}`,
-          );
-        }
-        currentTimeSlotStart.add(duration, 'minutes');
-      }
-
-      // Fetch appointments for the day and this specific franja to check which slots are already booked
-      const appointments = await this.repo.find({
-        where: {
-          day: { dayId: day.dayId },
-          appointmentTypeAgent: { appointmentType: { appointmentTypeId } },
-          cancelled: false,
-        },
-      });
-
-      // Map appointments to their starting hours for comparison
-      const bookedTimes = appointments.map((a) => a.startingHour);
-      // Filter out slots that have been booked
-      const availableSlots = slots.filter(
-        (slot) => !bookedTimes.includes(slot.split(' to ')[0]),
-      );
-      allSlots = allSlots.concat(availableSlots);
-    }
-
-    return { day, availableSlots: allSlots };
-  }*/
-
   async create(createDto: CreateAppointmentDto): Promise<Appointment> {
     const day = await this.dayService.getById(createDto.dayId);
     const appointmentTypeAgent = await this.appointmentTypeAgentService.getById(
@@ -584,21 +532,6 @@ export class AppointmentService {
     });
 
     const createdAppointment = await this.repo.save(appointment);
-    /*await this.whatsappService.sendMessage({
-      codigoBot: 'd325d6747956f6a6f56587232b81712e',
-      codigoPlantilla: 'recordatorio_citas',
-      codigoPostalTel: '+34',
-      numeroReceptor: `34${createdAppointment.clientPhoneNumber}`,
-      nombreReceptor: createdAppointment.clientName,
-      fBotEncendido: true,
-      fMostrarMensajeEnChat: true,
-      parametros: {
-        1: `${createdAppointment.day.dayName}`,
-        2: createdAppointment.startingHour,
-        3: createdAppointment.location.locationName,
-        4: createdAppointment.location.fullAddress,
-      },
-    });*/
     return createdAppointment;
   }
 

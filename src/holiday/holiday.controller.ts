@@ -36,7 +36,6 @@ export class HolidayController {
   async createManyHolidays(
     @Body() body: CreateManyHoliday,
   ): Promise<Holiday[]> {
-    console.log('holiday Body', body);
     return await this.holidayService.createMany(body);
   }
 
