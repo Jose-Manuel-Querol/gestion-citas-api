@@ -110,9 +110,9 @@ export class AppointmentController {
   @UseGuards(JwtAccountGuard)
   @Get('generate-report')
   async generateAppointmentsReport(
-    @Query('startingDate') startingDate: string,
-    @Query('endingDate') endingDate: string,
     @Res() res: Response,
+    @Query('startingDate') startingDate?: string,
+    @Query('endingDate') endingDate?: string,
     @Query('typeName') typeName?: string,
     @Query('clientName') clientName?: string,
     @Query('clientLastName') clientLastName?: string,

@@ -228,8 +228,8 @@ export class AppointmentService {
   }
 
   async getForReport(
-    startingDate: string,
-    endingDate: string,
+    startingDate?: string,
+    endingDate?: string,
     typeName?: string,
     clientName?: string,
     clientLastName?: string,
@@ -251,13 +251,14 @@ export class AppointmentService {
       .leftJoinAndSelect('appointmentTypeAgent.agent', 'agent')
       .leftJoinAndSelect('appointment.location', 'location');
 
-    // Mandatory conditions
-    queryBuilder
-      .where('appointment.cancelled = :cancelled', { cancelled: false })
-      .andWhere('appointment.dayDate BETWEEN :startingDate AND :endingDate', {
-        startingDate,
-        endingDate,
-      });
+    if (startingDate && endingDate) {
+      queryBuilder
+        .where('appointment.cancelled = :cancelled', { cancelled: false })
+        .andWhere('appointment.dayDate BETWEEN :startingDate AND :endingDate', {
+          startingDate,
+          endingDate,
+        });
+    }
 
     // Optional conditions
     if (clientName || clientLastName) {
