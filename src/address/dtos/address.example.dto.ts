@@ -1,4 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { ZoneExampleDto } from '../../appointment/dtos/zone.example.dto';
+import { Zone } from '../../zone/zone.entity';
 
 export class AddressExampleDto {
   @ApiProperty({
@@ -24,4 +26,10 @@ export class AddressExampleDto {
     description: 'Nombre de la dirección',
   })
   addressName: string;
+
+  @ApiProperty({
+    type: ZoneExampleDto,
+    description: 'Zona de la dirección',
+  })
+  zone: Zone;
 }

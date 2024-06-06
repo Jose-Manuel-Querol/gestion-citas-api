@@ -53,7 +53,7 @@ export class AddressController {
     status: 200,
     description:
       'Obtener todas las direcciones completas, buscando por el nombre de la dirección',
-    type: [CompleteAddressExampleDto],
+    type: [AddressExampleDto],
   })
   //@UseGuards(ApiGuard)
   @Get('secure/by-address-name')
