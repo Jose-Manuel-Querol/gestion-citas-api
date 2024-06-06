@@ -219,7 +219,7 @@ export class AppointmentService {
     }
 
     if (firstName) {
-      const searchTerms = firstName.split(' ');
+      /*const searchTerms = firstName.split(' ');
       searchTerms.forEach((term, index) => {
         const likeTerm = `%${term}%`;
         if (index === 0) {
@@ -243,10 +243,10 @@ export class AppointmentService {
             }),
           );
         }
-      });
-      /*queryBuilder.andWhere('agent.firstName LIKE  :firstName', {
-        firstName: `%${firstName}%`,
       });*/
+      queryBuilder.andWhere('agent.fullName LIKE  :fullName', {
+        fullName: `%${firstName}%`,
+      });
     }
 
     return await queryBuilder.getMany();
@@ -308,7 +308,7 @@ export class AppointmentService {
     }
 
     if (firstName) {
-      const searchTerms = firstName.split(' ');
+      /*const searchTerms = firstName.split(' ');
       searchTerms.forEach((term, index) => {
         const likeTerm = `%${term}%`;
         if (index === 0) {
@@ -332,10 +332,10 @@ export class AppointmentService {
             }),
           );
         }
-      });
-      /*queryBuilder.andWhere('agent.firstName LIKE  :firstName', {
-        firstName: `%${firstName}%`,
       });*/
+      queryBuilder.andWhere('agent.fullName LIKE  :fullName', {
+        fullName: `%${firstName}%`,
+      });
     }
 
     if (agentId) {

@@ -169,6 +169,7 @@ export class AgentService {
       email: createDto.email,
       firstName: createDto.firstName,
       lastName: createDto.lastName,
+      fullName: createDto.firstName + ' ' + createDto.lastName,
       zone,
     });
 
@@ -249,6 +250,7 @@ export class AgentService {
     }
     agent.firstName = updateDto.firstName;
     agent.lastName = updateDto.lastName;
+    agent.fullName = agent.firstName + ' ' + agent.lastName;
     agent.phoneNumber = updateDto.phoneNumber;
     agent.dni = updateDto.dni;
 

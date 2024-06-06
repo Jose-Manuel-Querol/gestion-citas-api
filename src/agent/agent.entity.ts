@@ -23,6 +23,9 @@ export class Agent {
   @Column()
   lastName: string;
 
+  @Column({ nullable: true })
+  fullName: string;
+
   @Column({ nullable: true, unique: true })
   slug: string;
 
