@@ -60,6 +60,32 @@ export class AddressService {
     return foundAddresses;
   }
 
+  async getAllByAddressNameComplete(addressName: string): Promise<Address[]> {
+    const addresses = await this.repo
+      .createQueryBuilder('address')
+      .leftJoinAndSelect('address.zone', 'zone')
+      .where(
+        "CONCAT(address.addressType, ' ', address.addressName) LIKE :name",
+        { name: `%${addressName}%` },
+      )
+      .getMany();
+
+    /*const foundAddresses: { address: string }[] = [];
+
+    for (let i = 0; i < addresses.length; i++) {
+      let address: string;
+      if (addresses[i].addressType) {
+        address = `${addresses[i].addressType}  ${addresses[i].addressName}`;
+      } else {
+        address = addresses[i].addressName;
+      }
+
+      foundAddresses.push({ address });
+    }*/
+
+    return addresses;
+  }
+
   async createOne(createDto: CreateAddressDto): Promise<Address> {
     const zone = await this.zoneService.getByZoneName(createDto.zoneName);
     const address = this.repo.create({

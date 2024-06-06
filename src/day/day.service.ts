@@ -35,7 +35,10 @@ export class DayService {
     return day;
   }
 
-  async filterDaysAndAgents(appointmentTypeId: number): Promise<Day[]> {
+  async filterDaysAndAgents(
+    appointmentTypeId: number,
+    zoneId: number,
+  ): Promise<Day[]> {
     const query = this.repo
       .createQueryBuilder('day')
       .leftJoinAndSelect('day.appointmentTypeAgent', 'appointmentTypeAgent')
@@ -49,7 +52,8 @@ export class DayService {
       .where('appointmentType.appointmentTypeId = :appointmentTypeId', {
         appointmentTypeId,
       })
-      .andWhere('agent.active = :active', { active: true });
+      .andWhere('agent.active = :active', { active: true })
+      .andWhere('zone.zoneId = :zoneId', { zoneId });
 
     const days = await query.getMany();
     return days;

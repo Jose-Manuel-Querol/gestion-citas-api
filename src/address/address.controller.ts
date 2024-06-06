@@ -59,8 +59,8 @@ export class AddressController {
   @Get('secure/by-address-name')
   async getAllAddressByAddressNamePublicApi(
     @Query('addressName') addressName: string,
-  ): Promise<{ address: string }[]> {
-    return await this.addressService.getAllByAddressName(addressName);
+  ): Promise<Address[]> {
+    return await this.addressService.getAllByAddressNameComplete(addressName);
   }
 
   @ApiExcludeEndpoint()
@@ -89,6 +89,16 @@ export class AddressController {
     @Query('addressName') addressName: string,
   ): Promise<{ address: string }[]> {
     return await this.addressService.getAllByAddressName(addressName);
+  }
+
+  @ApiExcludeEndpoint()
+  @UseGuards(JwtAccountGuard, RolesGuard)
+  @Roles('Admin')
+  @Get('by-address-name/complete')
+  async getAllAddressCompleteByAddressName(
+    @Query('addressName') addressName: string,
+  ): Promise<Address[]> {
+    return await this.addressService.getAllByAddressNameComplete(addressName);
   }
 
   @ApiExcludeEndpoint()

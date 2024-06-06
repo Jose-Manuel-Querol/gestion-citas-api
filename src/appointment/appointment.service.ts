@@ -2,7 +2,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Appointment } from './appointment.entity';
-import { Between, In, Repository } from 'typeorm';
+import { Between, Brackets, In, Repository } from 'typeorm';
 import { DayService } from '../day/day.service';
 import { AppointmentTypeAgentService } from '../appointment-type-agent/appointment-type-agent.service';
 import { LocationService } from '../location/location.service';
@@ -219,9 +219,34 @@ export class AppointmentService {
     }
 
     if (firstName) {
-      queryBuilder.andWhere('agent.firstName LIKE  :firstName', {
-        firstName: `%${firstName}%`,
+      const searchTerms = firstName.split(' ');
+      searchTerms.forEach((term, index) => {
+        const likeTerm = `%${term}%`;
+        if (index === 0) {
+          queryBuilder.andWhere(
+            new Brackets((qb) => {
+              qb.where('agent.firstName LIKE :firstNameTerm', {
+                firstNameTerm: likeTerm,
+              }).orWhere('agent.lastName LIKE :lastNameTerm', {
+                lastNameTerm: likeTerm,
+              });
+            }),
+          );
+        } else {
+          queryBuilder.orWhere(
+            new Brackets((qb) => {
+              qb.where('agent.firstName LIKE :firstNameTerm', {
+                firstNameTerm: likeTerm,
+              }).orWhere('agent.lastName LIKE :lastNameTerm', {
+                lastNameTerm: likeTerm,
+              });
+            }),
+          );
+        }
       });
+      /*queryBuilder.andWhere('agent.firstName LIKE  :firstName', {
+        firstName: `%${firstName}%`,
+      });*/
     }
 
     return await queryBuilder.getMany();
@@ -283,9 +308,34 @@ export class AppointmentService {
     }
 
     if (firstName) {
-      queryBuilder.andWhere('agent.firstName LIKE  :firstName', {
-        firstName: `%${firstName}%`,
+      const searchTerms = firstName.split(' ');
+      searchTerms.forEach((term, index) => {
+        const likeTerm = `%${term}%`;
+        if (index === 0) {
+          queryBuilder.andWhere(
+            new Brackets((qb) => {
+              qb.where('agent.firstName LIKE :firstNameTerm', {
+                firstNameTerm: likeTerm,
+              }).orWhere('agent.lastName LIKE :lastNameTerm', {
+                lastNameTerm: likeTerm,
+              });
+            }),
+          );
+        } else {
+          queryBuilder.orWhere(
+            new Brackets((qb) => {
+              qb.where('agent.firstName LIKE :firstNameTerm', {
+                firstNameTerm: likeTerm,
+              }).orWhere('agent.lastName LIKE :lastNameTerm', {
+                lastNameTerm: likeTerm,
+              });
+            }),
+          );
+        }
       });
+      /*queryBuilder.andWhere('agent.firstName LIKE  :firstName', {
+        firstName: `%${firstName}%`,
+      });*/
     }
 
     if (agentId) {
@@ -325,9 +375,10 @@ export class AppointmentService {
     return appointment;
   }
 
-  async findAvailableAppointments(appointmentTypeId: number) {
+  async findAvailableAppointments(appointmentTypeId: number, zoneId: number) {
     const targetDays = await this.dayService.filterDaysAndAgents(
       appointmentTypeId,
+      zoneId,
     );
     const todayISO = new Date().toISOString().split('T')[0];
     const holidays = await this.holidayService.getAllHolidayAvailable(todayISO);
@@ -380,9 +431,7 @@ export class AppointmentService {
             availableSlots: availableSlotsAndDate.availableSlots.map(
               (row) => row.time,
             ),
-            location: await this.locationService.getByZone(
-              day.appointmentTypeAgent.agent.zone.zoneId,
-            ),
+            location: await this.locationService.getByZone(zoneId),
             day: day,
           };
         } else {
