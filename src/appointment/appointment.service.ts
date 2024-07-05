@@ -632,14 +632,15 @@ export class AppointmentService {
     // Define the table options directly with pdfkit-table enhancement
     const tableArray = {
       headers: [
-        { label: 'Fecha', property: 'date', width: 70 },
-        { label: 'Hora', property: 'hour', width: 70 },
-        { label: 'Agente', property: 'agent', width: 70 },
-        { label: 'Tipo de Cita', property: 'appointmentType', width: 70 },
+        { label: 'Fecha', property: 'date', width: 60 },
+        { label: 'Hora', property: 'hour', width: 60 },
+        { label: 'Agente', property: 'agent', width: 80 },
+        { label: 'Tipo de Cita', property: 'appointmentType', width: 60 },
         { label: 'Nombre del Cliente', property: 'client', width: 70 },
-        { label: 'Celular', property: 'phone', width: 70 },
-        { label: 'Código', property: 'code', width: 70 },
-        { label: 'Centro de Atención', property: 'location', width: 70 },
+        { label: 'Dirección', property: 'address', width: 70 },
+        { label: 'Celular', property: 'phone', width: 60 },
+        { label: 'Código', property: 'code', width: 40 },
+        { label: 'Centro de Atención', property: 'location', width: 60 },
       ],
       datas: appointments.map((appointment) => ({
         date: convertIsoToDate(appointment.dayDate),
@@ -648,6 +649,7 @@ export class AppointmentService {
         appointmentType:
           appointment.appointmentTypeAgent.appointmentType.typeName,
         client: `${appointment.clientName} ${appointment.clientLastName || ''}`,
+        address: appointment.clientAddress,
         phone: appointment.clientPhoneNumber,
         code: appointment.code,
         location: appointment.location.locationName,
