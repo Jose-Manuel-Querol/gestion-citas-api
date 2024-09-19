@@ -706,6 +706,7 @@ export class AppointmentService {
     return this.repo.find({
       where: {
         dayDate: targetDate,
+        cancelled: false,
       },
       relations: {
         appointmentTypeAgent: { appointmentType: true, agent: true },
