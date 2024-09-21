@@ -99,4 +99,20 @@ export class AgentController {
   async deleteAgent(@Param('id') agentId: string): Promise<Agent> {
     return await this.agentService.delete(parseInt(agentId));
   }
+
+  @ApiExcludeEndpoint()
+  @UseGuards(JwtAccountGuard, RolesGuard)
+  @Roles('Admin')
+  @Get('/soft-delete/:id')
+  async softDeleteAgent(@Param('id') agentId: string): Promise<Agent> {
+    return await this.agentService.softDelete(parseInt(agentId));
+  }
+
+  @ApiExcludeEndpoint()
+  @UseGuards(JwtAccountGuard, RolesGuard)
+  @Roles('Admin')
+  @Get('/soft-recover/:id')
+  async softRecoverAgent(@Param('id') agentId: string): Promise<Agent> {
+    return await this.agentService.softRecover(parseInt(agentId));
+  }
 }

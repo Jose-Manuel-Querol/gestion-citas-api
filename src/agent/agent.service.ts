@@ -32,6 +32,7 @@ export class AgentService {
 
   async getAll(): Promise<Agent[]> {
     return await this.repo.find({
+      where: { deleted: false },
       relations: {
         zone: true,
         appointmentTypeAgents: {
@@ -114,6 +115,7 @@ export class AgentService {
     const agent = await this.repo.findOne({
       where: {
         account: { accountId },
+        deleted: false,
       },
     });
 
@@ -336,5 +338,17 @@ export class AgentService {
     await this.repo.remove(agent);
     agent.agentId = agentId;
     return agent;
+  }
+
+  async softDelete(agentId: number): Promise<Agent> {
+    const agent = await this.getById(agentId);
+    agent.deleted = true;
+    return await this.repo.save(agent);
+  }
+
+  async softRecover(agentId: number): Promise<Agent> {
+    const agent = await this.getById(agentId);
+    agent.deleted = false;
+    return await this.repo.save(agent);
   }
 }

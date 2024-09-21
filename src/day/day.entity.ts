@@ -22,6 +22,9 @@ export class Day {
   @Column({ default: false })
   active: boolean;
 
+  @Column({ default: false })
+  deleted: boolean;
+
   @CreateDateColumn()
   createdAt: Date;
 

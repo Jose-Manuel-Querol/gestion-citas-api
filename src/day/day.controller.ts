@@ -44,4 +44,20 @@ export class DayController {
   async deleteDay(@Param('id') dayId: string): Promise<Day> {
     return await this.dayService.delete(parseInt(dayId));
   }
+
+  @ApiExcludeEndpoint()
+  @UseGuards(JwtAccountGuard, RolesGuard)
+  @Roles('Admin')
+  @Get('/soft-delete/:id')
+  async softDeleteDay(@Param('id') dayId: string): Promise<Day> {
+    return await this.dayService.softDelete(parseInt(dayId));
+  }
+
+  @ApiExcludeEndpoint()
+  @UseGuards(JwtAccountGuard, RolesGuard)
+  @Roles('Admin')
+  @Get('/soft-recover/:id')
+  async softRecoverDay(@Param('id') dayId: string): Promise<Day> {
+    return await this.dayService.softRecover(parseInt(dayId));
+  }
 }

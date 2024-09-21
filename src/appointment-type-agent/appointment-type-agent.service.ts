@@ -148,7 +148,7 @@ export class AppointmentTypeAgentService {
         );
         if (dayIdsToDelete.length > 0) {
           for (let f = 0; f < dayIdsToDelete.length; f++) {
-            await this.dayService.delete(dayIdsToDelete[f]);
+            await this.dayService.softDelete(dayIdsToDelete[f]);
           }
         }
 

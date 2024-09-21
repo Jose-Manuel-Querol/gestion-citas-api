@@ -62,6 +62,9 @@ export class Agent {
   @Column({ default: true })
   active: boolean;
 
+  @Column({ default: false })
+  deleted: boolean;
+
   @Column({ nullable: true, type: 'datetime' })
   activationStart: string;
 

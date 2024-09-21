@@ -17,7 +17,10 @@ export class DayService {
     appointmentTypeAgentId: number,
   ): Promise<Day[]> {
     return await this.repo.find({
-      where: { appointmentTypeAgent: { appointmentTypeAgentId } },
+      where: {
+        appointmentTypeAgent: { appointmentTypeAgentId },
+        deleted: false,
+      },
       relations: { appointmentTypeAgent: true, franjas: true },
     });
   }
@@ -52,6 +55,7 @@ export class DayService {
       .where('appointmentType.appointmentTypeId = :appointmentTypeId', {
         appointmentTypeId,
       })
+      .andWhere('day.deleted = :deleted', { deleted: false })
       .andWhere('agent.active = :active', { active: true })
       .andWhere('zone.zoneId = :zoneId', { zoneId });
 
@@ -121,6 +125,18 @@ export class DayService {
       }
     }
     return await this.getById(updatedDay.dayId);
+  }
+
+  async softDelete(dayId: number): Promise<Day> {
+    const day = await this.getById(dayId);
+    day.deleted = true;
+    return await this.repo.save(day);
+  }
+
+  async softRecover(dayId: number): Promise<Day> {
+    const day = await this.getById(dayId);
+    day.deleted = false;
+    return await this.repo.save(day);
   }
 
   async delete(dayId: number): Promise<Day> {
