@@ -31,7 +31,7 @@ export class AgentService {
   ) {}
 
   async getAll(): Promise<Agent[]> {
-    return await this.repo.find({
+    const agents = await this.repo.find({
       where: { deleted: false },
       relations: {
         zone: true,
@@ -41,10 +41,21 @@ export class AgentService {
         },
       },
     });
+    return agents.map((agent) => {
+      agent.appointmentTypeAgents = agent.appointmentTypeAgents.map(
+        (appointmentTypeAgent) => {
+          appointmentTypeAgent.days = appointmentTypeAgent.days.filter(
+            (day) => !day.deleted,
+          );
+          return appointmentTypeAgent;
+        },
+      );
+      return agent;
+    });
   }
 
   async getAllBySlug(slug: string): Promise<Agent[]> {
-    return await this.repo.find({
+    const agents = await this.repo.find({
       where: { slug },
       relations: {
         zone: true,
@@ -53,6 +64,17 @@ export class AgentService {
           days: { franjas: true },
         },
       },
+    });
+    return agents.map((agent) => {
+      agent.appointmentTypeAgents = agent.appointmentTypeAgents.map(
+        (appointmentTypeAgent) => {
+          appointmentTypeAgent.days = appointmentTypeAgent.days.filter(
+            (day) => !day.deleted,
+          );
+          return appointmentTypeAgent;
+        },
+      );
+      return agent;
     });
   }
 
@@ -71,6 +93,15 @@ export class AgentService {
     if (!agent) {
       throw new NotFoundException('El agente no fue encontrado');
     }
+
+    agent.appointmentTypeAgents = agent.appointmentTypeAgents.map(
+      (appointmentTypeAgent) => {
+        appointmentTypeAgent.days = appointmentTypeAgent.days.filter(
+          (day) => !day.deleted,
+        );
+        return appointmentTypeAgent;
+      },
+    );
 
     return agent;
   }
@@ -92,6 +123,15 @@ export class AgentService {
       );
     }
 
+    agent.appointmentTypeAgents = agent.appointmentTypeAgents.map(
+      (appointmentTypeAgent) => {
+        appointmentTypeAgent.days = appointmentTypeAgent.days.filter(
+          (day) => !day.deleted,
+        );
+        return appointmentTypeAgent;
+      },
+    );
+
     return agent;
   }
 
@@ -108,7 +148,17 @@ export class AgentService {
       },
     });
 
-    return agents;
+    return agents.map((agent) => {
+      agent.appointmentTypeAgents = agent.appointmentTypeAgents.map(
+        (appointmentTypeAgent) => {
+          appointmentTypeAgent.days = appointmentTypeAgent.days.filter(
+            (day) => !day.deleted,
+          );
+          return appointmentTypeAgent;
+        },
+      );
+      return agent;
+    });
   }
 
   async getAgentByAccountId(accountId: number): Promise<Agent> {
@@ -122,6 +172,15 @@ export class AgentService {
     if (!agent) {
       throw new NotFoundException('El agente no fue encontrado');
     }
+
+    agent.appointmentTypeAgents = agent.appointmentTypeAgents.map(
+      (appointmentTypeAgent) => {
+        appointmentTypeAgent.days = appointmentTypeAgent.days.filter(
+          (day) => !day.deleted,
+        );
+        return appointmentTypeAgent;
+      },
+    );
 
     return agent;
   }
@@ -141,6 +200,15 @@ export class AgentService {
     if (!agent) {
       throw new NotFoundException('El agente no fue encontrado');
     }
+
+    agent.appointmentTypeAgents = agent.appointmentTypeAgents.map(
+      (appointmentTypeAgent) => {
+        appointmentTypeAgent.days = appointmentTypeAgent.days.filter(
+          (day) => !day.deleted,
+        );
+        return appointmentTypeAgent;
+      },
+    );
 
     return agent;
   }

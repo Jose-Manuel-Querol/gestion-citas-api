@@ -17,19 +17,26 @@ export class AppointmentTypeAgentService {
   ) {}
 
   async getAll(): Promise<AppointmentTypeAgent[]> {
-    return this.repo.find({
+    const appointmentTypeAgents = await this.repo.find({
       relations: {
         agent: true,
         appointmentType: true,
         days: { franjas: true },
       },
     });
+
+    return appointmentTypeAgents.map((appointmentTypeAgent) => {
+      appointmentTypeAgent.days = appointmentTypeAgent.days.filter(
+        (day) => !day.deleted,
+      );
+      return appointmentTypeAgent;
+    });
   }
 
   async getAllByAppointmentType(
     appointmentTypeId: number,
   ): Promise<AppointmentTypeAgent[]> {
-    return this.repo.find({
+    const appointmentTypeAgents = await this.repo.find({
       relations: {
         agent: true,
         appointmentType: true,
@@ -37,16 +44,30 @@ export class AppointmentTypeAgentService {
       },
       where: { appointmentType: { appointmentTypeId } },
     });
+
+    return appointmentTypeAgents.map((appointmentTypeAgent) => {
+      appointmentTypeAgent.days = appointmentTypeAgent.days.filter(
+        (day) => !day.deleted,
+      );
+      return appointmentTypeAgent;
+    });
   }
 
   async getAllByAgent(agentId: number): Promise<AppointmentTypeAgent[]> {
-    return this.repo.find({
+    const appointmentTypeAgents = await this.repo.find({
       relations: {
         agent: true,
         appointmentType: true,
         days: { franjas: true },
       },
       where: { agent: { agentId } },
+    });
+
+    return appointmentTypeAgents.map((appointmentTypeAgent) => {
+      appointmentTypeAgent.days = appointmentTypeAgent.days.filter(
+        (day) => !day.deleted,
+      );
+      return appointmentTypeAgent;
     });
   }
 
@@ -63,6 +84,9 @@ export class AppointmentTypeAgentService {
     if (!appointmentTypeAgent) {
       throw new NotFoundException('La cita no existe');
     }
+    appointmentTypeAgent.days = appointmentTypeAgent.days.filter(
+      (day) => !day.deleted,
+    );
 
     return appointmentTypeAgent;
   }
@@ -101,7 +125,12 @@ export class AppointmentTypeAgentService {
       appointmentTypeAgents.push(createdAppointment);
     }
 
-    return appointmentTypeAgents;
+    return appointmentTypeAgents.map((appointmentTypeAgent) => {
+      appointmentTypeAgent.days = appointmentTypeAgent.days.filter(
+        (day) => !day.deleted,
+      );
+      return appointmentTypeAgent;
+    });
   }
 
   async updateMany(
@@ -213,7 +242,12 @@ export class AppointmentTypeAgentService {
         appointmentTypeAgents.push(updatedAppointment);
       }
     }
-    return appointmentTypeAgents;
+    return appointmentTypeAgents.map((appointmentTypeAgent) => {
+      appointmentTypeAgent.days = appointmentTypeAgent.days.filter(
+        (day) => !day.deleted,
+      );
+      return appointmentTypeAgent;
+    });
   }
 
   async delete(appointmentTypeAgentId: number): Promise<AppointmentTypeAgent> {
